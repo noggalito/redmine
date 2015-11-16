@@ -36,3 +36,4 @@
 *.rbc
 
 /.bundle
+/repos/*
