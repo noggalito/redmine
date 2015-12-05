@@ -220,10 +220,6 @@ GEM
       hashie (~> 1.2.0)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    webrat (0.7.3)
-      nokogiri (>= 1.2.0)
-      rack (>= 1.0)
-      rack-test (>= 0.5.3)
     websocket (1.2.2)
     websocket-driver (0.6.3)
       websocket-extensions (>= 0.1.0)
@@ -274,7 +270,6 @@ DEPENDENCIES
   simplecov (~> 0.9.1)
   transifex-ruby-fork-jg
   tzinfo-data
-  webrat
   yard
 
 BUNDLED WITH
