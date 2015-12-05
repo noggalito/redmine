@@ -1,0 +1,37 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+one:
+  id: 1
+  contact_id: 3 #Domoway
+  status_id: 1
+  description: First invoice description
+  number: 1/001
+  due_date: <%= (Date.today + 2).to_s(:db) %>
+  invoice_date: <%= Date.today %>
+  project_id: 1
+  discount: 10
+  discount_type: 0
+  currency: USD
+  assigned_to_id: 1
+two:
+  id: 2
+  status_id: 2
+  contact_id: 3 # Domoway
+  description: Second invoice description
+  number: 1/002
+  currency: EUR
+  discount: 10
+  discount_type: 0
+  due_date: <%= Date.today %>
+  invoice_date: <%= 40.days.ago.to_s(:db) %>
+  project_id: 1
+  assigned_to_id: 2
+three:
+  id: 3
+  status_id: 3
+  contact_id: 2 #Marat Aminov
+  description: Third invoice description
+  number: 1/003
+  due_date: <%= Date.today - 5 %>
+  invoice_date: <%= 7.days.ago.to_s(:db) %>
+  project_id: 2
+  template_id: 1
