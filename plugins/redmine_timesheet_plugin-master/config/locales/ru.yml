@@ -1,0 +1,18 @@
+ru:
+  timesheet_title: Сводная таблица затраченного времени
+  timesheet_date_range_label: Период
+  timesheet_date_from_label: Начиная с
+  timesheet_date_to_label: по
+  timesheet_project_label: Проект
+  timesheet_activities_label: Активность
+  timesheet_users_label: Пользователи
+  timesheet_showing_users: 'сводка для пользователя: '
+  timesheet_permalink: '(постоянная ссылка на таблицу)'
+  timesheet_group_by: Группировать по
+  label_show_project_status: "Проекты со статусом:"
+  text_active_projects: "Активные"
+  text_all_projects: "Все (активные и заархивированные)"
+  label_user_status: "Показывать пользователей со статусом"
+  text_active_users: "Только активные"
+  text_all_users: "Все"
+  timesheet_groups_label: Группы
