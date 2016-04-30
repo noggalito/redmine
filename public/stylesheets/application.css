@@ -1,5 +1,5 @@
 html {overflow-y:scroll;}
-body { font-family: Verdana, sans-serif; font-size: 12px; color:#484848; margin: 0; padding: 0; min-width: 900px; }
+body { font-family: Verdana, sans-serif; font-size: 12px; color:#333; margin: 0; padding: 0; min-width: 900px; }
 
 h1, h2, h3, h4 {font-family: "Trebuchet MS", Verdana, sans-serif;padding: 2px 10px 1px 0px;margin: 0 0 10px 0;}
 #content h1, h2, h3, h4 {color: #555;}
@@ -77,8 +77,11 @@ pre, code {font-family: Consolas, Menlo, "Liberation Mono", Courier, monospace;}
 #sidebar hr{ width: 100%; margin: 0 auto; height: 1px; background: #ccc; border: 0; }
 * html #sidebar hr{ width: 95%; position: relative; left: -6px; color: #ccc; }
 #sidebar .contextual { margin-right: 1em; }
-#sidebar ul {margin: 0;  padding: 0;}
-#sidebar ul li {list-style-type:none;margin: 0px 2px 0px 0px; padding: 0px 0px 0px 0px;}
+#sidebar ul, ul.flat {margin: 0;  padding: 0;}
+#sidebar ul li, ul.flat li {list-style-type:none;margin: 0px 2px 0px 0px; padding: 0px 0px 0px 0px;}
+#sidebar div.wiki h3 {font-size:13px; margin-top:0; color:#555;}
+#sidebar div.wiki ul {margin:inherit; padding-left:40px;}
+#sidebar div.wiki ul li {list-style-type:inherit;}
 
 #content { width: 75%; background-color: #fff; margin: 0px; border-right: 1px solid #ddd; padding: 6px 10px 10px 10px; z-index: 10; }
 * html #content{ width: 75%; padding-left: 0; margin-top: 0px; padding: 6px 10px 10px 10px;}
@@ -103,6 +106,8 @@ div.modal .box p {margin: 0.3em 0;}
 input#openid_url { background: url(../images/openid-bg.gif) no-repeat; background-color: #fff; background-position: 0 50%; padding-left: 18px; }
 
 .clear:after{ content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+
+.mobile-show {display: none;}
 
 /***** Links *****/
 a, a:link, a:visited{ color: #169; text-decoration: none; }
@@ -231,9 +236,12 @@ table.plugins span.name { font-weight: bold; display: block; margin-bottom: 6px;
 table.plugins span.description { display: block; font-size: 0.9em; }
 table.plugins span.url { display: block; font-size: 0.9em; }
 
-table.list tbody tr.group td { padding: 0.8em 0 0.5em 0.3em; font-weight: bold; border-bottom: 1px solid #ccc; text-align:left; }
-table.list tbody tr.group span.count {position:relative; top:-1px; color:#fff; font-size:10px; background:#9DB9D5; padding:0px 6px 1px 6px; border-radius:3px; margin-left:4px;}
-tr.group a.toggle-all { color: #aaa; font-size: 80%; font-weight: normal; display:none;}
+tr.group td { padding: 0.8em 0 0.5em 0.3em; border-bottom: 1px solid #ccc; text-align:left; }
+tr.group span.name {font-weight:bold;}
+tr.group span.count {font-weight:bold; position:relative; top:-1px; color:#fff; font-size:10px; background:#9DB9D5; padding:0px 6px 1px 6px; border-radius:3px; margin-left:4px;}
+tr.group span.totals {color: #aaa; font-size: 80%;}
+tr.group span.totals .value {font-weight:bold; color:#777;}
+tr.group a.toggle-all { color: #aaa; font-size: 80%; display:none; float:right; margin-right:4px;}
 tr.group:hover a.toggle-all { display:inline;}
 a.toggle-all:hover {text-decoration:none;}
 
@@ -250,16 +258,17 @@ a.sort { padding-right: 16px; background-position: 100% 50%; background-repeat: 
 a.sort.asc  { background-image: url(../images/sort_asc.png); }
 a.sort.desc { background-image: url(../images/sort_desc.png); }
 
-table.attributes { width: 100% }
-table.attributes th { vertical-align: top; text-align: left; }
-table.attributes td { vertical-align: top; }
-
 table.boards a.board, h3.comments { background: url(../images/comment.png) no-repeat 0% 50%; padding-left: 20px; }
 table.boards td.last-message {text-align:left;font-size:80%;}
 
 table.messages td.last_message {text-align:left;}
 
 #query_form_content {font-size:90%;}
+
+.query_sort_criteria_count {
+  display: inline-block;
+  min-width: 1em;
+}
 
 table.query-columns {
   border-collapse: collapse;
@@ -271,6 +280,9 @@ table.query-columns td.buttons {
   text-align: center;
 }
 table.query-columns td.buttons input[type=button] {width:35px;}
+.query-totals {text-align:right; margin-top:-2.3em;}
+.query-totals>span {margin-left:0.6em;}
+.query-totals .value {font-weight:bold;}
 
 td.center {text-align:center;}
 
@@ -305,6 +317,10 @@ span.search_for_watchers a, span.add_attachment a {padding-left:16px; background
   line-height:1.5em;
   border: 1px solid #e4e4e4;
   word-wrap: break-word;
+  border-radius: 3px;
+}
+.pagination .per-page span.selected {
+  font-weight: bold;
 }
 
 div.square {
@@ -324,14 +340,14 @@ div.square {
 form {display: inline;}
 input, select {vertical-align: middle; margin-top: 1px; margin-bottom: 1px;}
 fieldset {border: 1px solid #e4e4e4; margin:0;}
-legend {color: #484848;}
+legend {color: #333;}
 hr { width: 100%; height: 1px; background: #ccc; border: 0;}
 blockquote { font-style: italic; border-left: 3px solid #e0e0e0; padding-left: 0.6em; margin-left: 2.4em;}
 blockquote blockquote { margin-left: 0;}
 abbr, span.field-description[title] { border-bottom: 1px dotted #aaa; cursor: help; }
 textarea.wiki-edit {width:99%; resize:vertical;}
 li p {margin-top: 0;}
-div.issue {background:#ffffdd; padding:6px; margin-bottom:6px;border: 1px solid #d7d7d7;}
+div.issue {background:#ffffdd; padding:6px; margin-bottom:6px; border: 1px solid #d7d7d7; border-radius:3px;}
 p.breadcrumb { font-size: 0.9em; margin: 4px 0 4px 0;}
 p.subtitle { font-size: 0.9em; margin: -6px 0 12px 0; font-style: italic; }
 p.footnote { font-size: 0.9em; margin-top: 0px; margin-bottom: 0px; }
@@ -344,8 +360,10 @@ div.issue div.subject>div>p { margin-top: 0.5em; }
 div.issue div.subject h3 {margin: 0; margin-bottom: 0.1em;}
 div.issue span.private, div.journal span.private { position:relative; bottom: 2px; text-transform: uppercase; background: #d22; color: #fff; font-weight:bold; padding: 0px 2px 0px 2px; font-size: 60%; margin-right: 2px; border-radius: 2px;}
 div.issue .next-prev-links {color:#999;}
-div.issue table.attributes th {width:22%;}
-div.issue table.attributes td {width:28%;}
+div.issue .attributes {margin-top: 2em;}
+div.issue .attribute {padding-left:180px; clear:left; min-height: 1.8em;}
+div.issue .attribute .label {width: 170px; margin-left:-180px; font-weight:bold; float:left;}
+div.issue.overdue .due-date .value { color: #c22; }
 
 #issue_tree table.issues, #relations table.issues { border: 0; }
 #issue_tree td.checkbox, #relations td.checkbox {display:none;}
@@ -365,7 +383,9 @@ fieldset#filters td.operator select {max-width:170px;}
 fieldset#filters td.values { white-space:nowrap; }
 fieldset#filters td.values select {min-width:130px;}
 fieldset#filters td.values input {height:1em;}
-fieldset#filters td.add-filter { text-align: right; vertical-align: top; }
+
+#filters-table {width:60%; float:left;}
+.add-filter {width:35%; float:right; text-align: right; vertical-align: top;}
 
 #issue_is_private_wrap {float:right; margin-right:1em;}
 .toggle-multiselect {background: url(../images/bullet_toggle_plus.png) no-repeat 0% 40%; padding-left:8px; margin-left:0; cursor:pointer;}
@@ -379,6 +399,9 @@ div#issue-changesets p { margin-top: 0; margin-bottom: 1em;}
 .journal ul.details img {margin:0 0 -3px 4px;}
 div.journal {overflow:auto;}
 div.journal.private-notes {border-left:2px solid #d22; padding-left:4px; margin-left:-6px;}
+div.journal ul.details {color:#959595; margin-bottom: 1.5em;}
+div.journal ul.details a {color:#70A7CD;}
+div.journal ul.details a:hover {color:#D14848;}
 
 div#activity dl, #search-results { margin-left: 2em; }
 div#activity dd, #search-results dd { margin-bottom: 1em; padding-left: 18px; font-size: 0.9em; }
@@ -473,10 +496,52 @@ select.expandable {vertical-align:top;}
 
 textarea#custom_field_possible_values {width: 95%; resize:vertical}
 textarea#custom_field_default_value {width: 95%; resize:vertical}
+.sort-handle {display:inline-block; vertical-align:middle;}
 
 input#content_comments {width: 99%}
 
-p.pagination {margin-top:8px; font-size: 90%}
+span.pagination {margin-left:3px; color:#888;}
+.pagination ul.pages {
+  margin: 0 5px 0 0;
+  padding: 0;
+  display: inline;
+}
+.pagination ul.pages li {
+  display: inline-block;
+  padding: 0;
+  border: 1px solid #ccc;
+  margin-left: -1px;
+  line-height: 2em;
+  margin-bottom: 1em;
+  white-space: nowrap;
+  text-align: center;
+}
+.pagination ul.pages li a,
+.pagination ul.pages li span {
+  padding: 3px 8px;
+}
+.pagination ul.pages li:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.pagination ul.pages li:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.pagination ul.pages li.current {
+  color: white;
+  background-color: #628DB6;
+  border-color: #628DB6;
+}
+.pagination ul.pages li.page:hover {
+  background-color: #EEE;
+}
+.pagination ul.pages li.page a:hover,
+.pagination ul.pages li.page a:active {
+  color: inherit;
+  text-decoration: inherit;
+}
+span.pagination>span {white-space:nowrap;}
 
 #search-form fieldset p {margin:0.2em 0;}
 
@@ -590,7 +655,8 @@ div.attachments span.author { font-size: 0.9em; color: #888; }
 
 div.thumbnails {margin-top:0.6em;}
 div.thumbnails div {background:#fff;border:2px solid #ddd;display:inline-block;margin-right:2px;}
-div.thumbnails img {margin: 3px;}
+div.thumbnails img {margin: 3px; vertical-align: middle;}
+#history div.thumbnails {margin-left: 2em;}
 
 p.other-formats { text-align: right; font-size:0.9em; color: #666; }
 .other-formats span + span:before { content: "| "; }
@@ -635,6 +701,7 @@ input.autocomplete.ajax-loading {
 .objects-selection {
   height: 300px;
   overflow: auto;
+  margin-bottom: 1em;
 }
 
 .objects-selection label {
@@ -660,6 +727,7 @@ input.autocomplete.ajax-loading {
   margin-bottom: 12px;
   font-size: 1.1em;
   border: 2px solid;
+  border-radius: 3px;
 }
 
 div.flash {margin-top: 8px;}
@@ -771,14 +839,17 @@ table.progress {
   margin: 1px 6px 1px 0px;
 }
 
+table.progress {width:80px;}
 table.progress td { height: 1em; }
 table.progress td.closed { background: #BAE0BA none repeat scroll 0%; }
 table.progress td.done { background: #D3EDD3 none repeat scroll 0%; }
 table.progress td.todo { background: #eee none repeat scroll 0%; }
-p.percent {font-size: 80%;}
+p.percent {font-size: 80%; margin:0;}
 p.progress-info {clear: left; font-size: 80%; margin-top:-4px; color:#777;}
 
-#roadmap table.progress td { height: 1.2em; }
+.version-overview table.progress {width:40em;}
+.version-overview table.progress td { height: 1.2em; }
+
 /***** Tabs *****/
 #content .tabs {height: 2.6em; margin-bottom:1.2em; position:relative; overflow:hidden;}
 #content .tabs ul {margin:0; position:absolute; bottom:0; padding-left:0.5em; width: 2000px; border-bottom: 1px solid #bbbbbb;}
@@ -890,6 +961,7 @@ div.wiki pre {
   padding: 8px;
   background-color: #fafafa;
   border: 1px solid #e2e2e2;
+  border-radius: 3px;
   width:auto;
   overflow-x: auto;
   overflow-y: hidden;
@@ -965,7 +1037,7 @@ a.close-icon:hover {background-image:url('../images/close_hl.png');}
   overflow: hidden;
 }
 
-.gantt_hdr.nwday {background-color:#f1f1f1;}
+.gantt_hdr.nwday {background-color:#f1f1f1; color:#999;}
 
 .gantt_subjects { font-size: 0.8em; }
 .gantt_subjects div { line-height:16px;height:16px;overflow:hidden;white-space:nowrap;text-overflow: ellipsis; }
@@ -1086,7 +1158,7 @@ div.issue img.gravatar {
   padding: 5px;
 }
 
-div.issue table img.gravatar {
+div.issue .attributes img.gravatar {
   height: 14px;
   width: 14px;
   padding: 2px;
@@ -1110,89 +1182,105 @@ h2 img { vertical-align:middle; }
 
 .hascontextmenu { cursor: context-menu; }
 
+.sample-data {border:1px solid #ccc; border-collapse:collapse; background-color:#fff; margin:0.5em;}
+.sample-data td {border:1px solid #ccc; padding: 2px 4px; font-family: Consolas, Menlo, "Liberation Mono", Courier, monospace;}
+.sample-data tr:first-child td {font-weight:bold; text-align:center;}
+
+.ui-progressbar {position: relative;}
+#progress-label {
+position: absolute; left: 50%; top: 4px;
+font-weight: bold;
+color: #555; text-shadow: 1px 1px 0 #fff;
+}
+
 /* Custom JQuery styles */
 .ui-datepicker-title select {width:70px !important; margin-top:-2px !important; margin-right:4px !important;}
 
 
 /************* CodeRay styles *************/
 .syntaxhl div {display: inline;}
-.syntaxhl .line-numbers {padding: 2px 4px 2px 4px; background-color: #eee; margin:0px 5px 0px 0px;}
 .syntaxhl .code pre { overflow: auto }
-.syntaxhl .debug { color: white !important; background: blue !important; }
 
 .syntaxhl .annotation { color:#007 }
 .syntaxhl .attribute-name { color:#b48 }
 .syntaxhl .attribute-value { color:#700 }
-.syntaxhl .binary { color:#509 }
+.syntaxhl .binary { color:#549 }
+.syntaxhl .binary .char { color:#325 }
+.syntaxhl .binary .delimiter { color:#325 }
+.syntaxhl .char { color:#D20 }
 .syntaxhl .char .content { color:#D20 }
 .syntaxhl .char .delimiter { color:#710 }
-.syntaxhl .char { color:#D20 }
 .syntaxhl .class { color:#258; font-weight:bold }
 .syntaxhl .class-variable { color:#369 }
 .syntaxhl .color { color:#0A0 }
 .syntaxhl .comment { color:#385 }
 .syntaxhl .comment .char { color:#385 }
 .syntaxhl .comment .delimiter { color:#385 }
-.syntaxhl .complex { color:#A08 }
 .syntaxhl .constant { color:#258; font-weight:bold }
 .syntaxhl .decorator { color:#B0B }
 .syntaxhl .definition { color:#099; font-weight:bold }
 .syntaxhl .delimiter { color:black }
 .syntaxhl .directive { color:#088; font-weight:bold }
-.syntaxhl .doc { color:#970 }
-.syntaxhl .doc-string { color:#D42; font-weight:bold }
+.syntaxhl .docstring { color:#D42; }
 .syntaxhl .doctype { color:#34b }
+.syntaxhl .done { text-decoration: line-through; color: gray }
 .syntaxhl .entity { color:#800; font-weight:bold }
 .syntaxhl .error { color:#F00; background-color:#FAA }
 .syntaxhl .escape  { color:#666 }
 .syntaxhl .exception { color:#C00; font-weight:bold }
 .syntaxhl .float { color:#06D }
 .syntaxhl .function { color:#06B; font-weight:bold }
+.syntaxhl .function .delimiter { color:#024; font-weight:bold }
 .syntaxhl .global-variable { color:#d70 }
 .syntaxhl .hex { color:#02b }
-.syntaxhl .imaginary { color:#f00 }
+.syntaxhl .id { color:#33D; font-weight:bold }
 .syntaxhl .include { color:#B44; font-weight:bold }
 .syntaxhl .inline { background-color: hsla(0,0%,0%,0.07); color: black }
 .syntaxhl .inline-delimiter { font-weight: bold; color: #666 }
 .syntaxhl .instance-variable { color:#33B }
 .syntaxhl .integer  { color:#06D }
+.syntaxhl .imaginary { color:#f00 }
+.syntaxhl .important { color:#D00 }
+.syntaxhl .key { color: #606 }
 .syntaxhl .key .char { color: #60f }
 .syntaxhl .key .delimiter { color: #404 }
-.syntaxhl .key { color: #606 }
 .syntaxhl .keyword { color:#939; font-weight:bold }
 .syntaxhl .label { color:#970; font-weight:bold }
-.syntaxhl .local-variable { color:#963 }
+.syntaxhl .local-variable { color:#950 }
+.syntaxhl .map .content { color:#808 }
+.syntaxhl .map .delimiter { color:#40A}
+.syntaxhl .map { background-color:hsla(200,100%,50%,0.06); }
 .syntaxhl .namespace { color:#707; font-weight:bold }
 .syntaxhl .octal { color:#40E }
 .syntaxhl .operator { }
 .syntaxhl .predefined { color:#369; font-weight:bold }
 .syntaxhl .predefined-constant { color:#069 }
-.syntaxhl .predefined-type { color:#0a5; font-weight:bold }
+.syntaxhl .predefined-type { color:#0a8; font-weight:bold }
 .syntaxhl .preprocessor { color:#579 }
 .syntaxhl .pseudo-class { color:#00C; font-weight:bold }
+.syntaxhl .regexp { background-color:hsla(300,100%,50%,0.06); }
 .syntaxhl .regexp .content { color:#808 }
 .syntaxhl .regexp .delimiter { color:#404 }
 .syntaxhl .regexp .modifier { color:#C2C }
-.syntaxhl .regexp { background-color:hsla(300,100%,50%,0.06); }
 .syntaxhl .reserved { color:#080; font-weight:bold }
+.syntaxhl .shell { background-color:hsla(120,100%,50%,0.06); }
 .syntaxhl .shell .content { color:#2B2 }
 .syntaxhl .shell .delimiter { color:#161 }
-.syntaxhl .shell { background-color:hsla(120,100%,50%,0.06); }
 .syntaxhl .string .char { color: #46a }
 .syntaxhl .string .content { color: #46a }
 .syntaxhl .string .delimiter { color: #46a }
 .syntaxhl .string .modifier { color: #46a }
+.syntaxhl .symbol { color:#d33 }
 .syntaxhl .symbol .content { color:#d33 }
 .syntaxhl .symbol .delimiter { color:#d33 }
-.syntaxhl .symbol { color:#d33 }
-.syntaxhl .tag { color:#070 }
+.syntaxhl .tag { color:#070; font-weight:bold }
 .syntaxhl .type { color:#339; font-weight:bold }
-.syntaxhl .value { color: #088; }
-.syntaxhl .variable  { color:#037 }
+.syntaxhl .value { color: #088 }
+.syntaxhl .variable { color:#037 }
 
 .syntaxhl .insert { background: hsla(120,100%,50%,0.12) }
 .syntaxhl .delete { background: hsla(0,100%,50%,0.12) }
-.syntaxhl .change { color: #bbf; background: #007; }
+.syntaxhl .change { color: #bbf; background: #007 }
 .syntaxhl .head { color: #f8f; background: #505 }
 .syntaxhl .head .filename { color: white; }
 

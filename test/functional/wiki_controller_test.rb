@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@ class WikiControllerTest < ActionController::TestCase
   fixtures :projects, :users, :email_addresses, :roles, :members, :member_roles,
            :enabled_modules, :wikis, :wiki_pages, :wiki_contents,
            :wiki_content_versions, :attachments,
-           :issues, :issue_statuses
+           :issues, :issue_statuses, :trackers
 
   def setup
     User.current = nil
@@ -319,7 +319,7 @@ class WikiControllerTest < ActionController::TestCase
           put :update, :project_id => 1,
             :id => 'Another_page',
             :content => {
-              :comments => 'a' * 300,  # failure here, comment is too long
+              :comments => 'a' * 1300,  # failure here, comment is too long
               :text => 'edited'
             },
             :wiki_page => {

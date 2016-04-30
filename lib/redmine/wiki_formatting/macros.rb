@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -92,7 +92,7 @@ module Redmine
         #   invoked without a block of text.  
         #
         # Examples:
-        # By default, when the macro is invoked, the coma separated list of arguments
+        # By default, when the macro is invoked, the comma separated list of arguments
         # is split and passed to the macro block as an array. If no argument is given
         # the macro will be invoked with an empty array:
         #

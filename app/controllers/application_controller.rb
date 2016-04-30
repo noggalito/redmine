@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@ class Unauthorized < Exception; end
 class ApplicationController < ActionController::Base
   include Redmine::I18n
   include Redmine::Pagination
+  include Redmine::Hook::Helper
   include RoutesHelper
   helper :routes
 
@@ -50,7 +51,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  before_filter :session_expiration, :user_setup, :force_logout_if_password_changed, :check_if_login_required, :check_password_change, :set_localization
+  before_filter :session_expiration, :user_setup, :check_if_login_required, :check_password_change, :set_localization
 
   rescue_from ::Unauthorized, :with => :deny_access
   rescue_from ::ActionView::MissingTemplate, :with => :missing_template
@@ -62,36 +63,23 @@ class ApplicationController < ActionController::Base
   include Redmine::SudoMode::Controller
 
   def session_expiration
-    if session[:user_id]
+    if session[:user_id] && Rails.application.config.redmine_verify_sessions != false
       if session_expired? && !try_to_autologin
         set_localization(User.active.find_by_id(session[:user_id]))
         self.logged_user = nil
         flash[:error] = l(:error_session_expired)
         require_login
-      else
-        session[:atime] = Time.now.utc.to_i
       end
     end
   end
 
   def session_expired?
-    if Setting.session_lifetime?
-      unless session[:ctime] && (Time.now.utc.to_i - session[:ctime].to_i <= Setting.session_lifetime.to_i * 60)
-        return true
-      end
-    end
-    if Setting.session_timeout?
-      unless session[:atime] && (Time.now.utc.to_i - session[:atime].to_i <= Setting.session_timeout.to_i * 60)
-        return true
-      end
-    end
-    false
+    ! User.verify_session_token(session[:user_id], session[:tk])
   end
 
   def start_user_session(user)
     session[:user_id] = user.id
-    session[:ctime] = Time.now.utc.to_i
-    session[:atime] = Time.now.utc.to_i
+    session[:tk] = user.generate_session_token
     if user.must_change_password?
       session[:pwd] = '1'
     end
@@ -148,18 +136,6 @@ class ApplicationController < ActionController::Base
     user
   end
 
-  def force_logout_if_password_changed
-    passwd_changed_on = User.current.passwd_changed_on || Time.at(0)
-    # Make sure we force logout only for web browser sessions, not API calls
-    # if the password was changed after the session creation.
-    if session[:user_id] && passwd_changed_on.utc.to_i > session[:ctime].to_i
-      reset_session
-      set_localization
-      flash[:error] = l(:error_session_expired)
-      redirect_to signin_url
-    end
-  end
-
   def autologin_cookie_name
     Redmine::Configuration['autologin_cookie_name'].presence || 'autologin'
   end
@@ -192,6 +168,7 @@ class ApplicationController < ActionController::Base
     if User.current.logged?
       cookies.delete(autologin_cookie_name)
       Token.delete_all(["user_id = ? AND action = ?", User.current.id, 'autologin'])
+      Token.delete_all(["user_id = ? AND action = ? AND value = ?", User.current.id, 'session', session[:tk]])
       self.logged_user = nil
     end
   end
@@ -351,7 +328,10 @@ class ApplicationController < ActionController::Base
   # Find issues with a single :id param or :ids array param
   # Raises a Unauthorized exception if one of the issues is not visible
   def find_issues
-    @issues = Issue.where(:id => (params[:id] || params[:ids])).preload(:project, :status, :tracker, :priority, :author, :assigned_to, :relations_to).to_a
+    @issues = Issue.
+      where(:id => (params[:id] || params[:ids])).
+      preload(:project, :status, :tracker, :priority, :author, :assigned_to, :relations_to, {:custom_values => :custom_field}).
+      to_a
     raise ActiveRecord::RecordNotFound if @issues.empty?
     raise Unauthorized unless @issues.all?(&:visible?)
     @projects = @issues.collect(&:project).compact.uniq
@@ -615,7 +595,7 @@ class ApplicationController < ActionController::Base
 
   # Returns a string that can be used as filename value in Content-Disposition header
   def filename_for_content_disposition(name)
-    request.env['HTTP_USER_AGENT'] =~ %r{(MSIE|Trident)} ? ERB::Util.url_encode(name) : name
+    request.env['HTTP_USER_AGENT'] =~ %r{(MSIE|Trident|Edge)} ? ERB::Util.url_encode(name) : name
   end
 
   def api_request?

@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -94,6 +94,13 @@ class Issue < ActiveRecord::Base
   scope :fixed_version, lambda {|versions|
     ids = [versions].flatten.compact.map {|v| v.is_a?(Version) ? v.id : v}
     ids.any? ? where(:fixed_version_id => ids) : where('1=0')
+  }
+  scope :assigned_to, lambda {|arg|
+    arg = Array(arg).uniq
+    ids = arg.map {|p| p.is_a?(Principal) ? p.id : p}
+    ids += arg.select {|p| p.is_a?(User)}.map(&:group_ids).flatten.uniq
+    ids.compact!
+    ids.any? ? where(:assigned_to_id => ids) : none
   }
 
   before_validation :clear_disabled_fields
@@ -320,10 +327,13 @@ class Issue < ActiveRecord::Base
   # Unless keep_tracker argument is set to true, this will change the tracker
   # to the first tracker of the new project if the previous tracker is not part
   # of the new project trackers.
-  # This will clear the fixed_version is it's no longer valid for the new project.
-  # This will clear the parent issue if it's no longer valid for the new project.
-  # This will set the category to the category with the same name in the new
-  # project if it exists, or clear it if it doesn't.
+  # This will:
+  # * clear the fixed_version is it's no longer valid for the new project.
+  # * clear the parent issue if it's no longer valid for the new project.
+  # * set the category to the category with the same name in the new
+  #   project if it exists, or clear it if it doesn't.
+  # * for new issue, set the fixed_version to the project default version
+  #   if it's a valid fixed_version.
   def project=(project, keep_tracker=false)
     project_was = self.project
     association(:project).writer(project)
@@ -347,6 +357,12 @@ class Issue < ActiveRecord::Base
       end
       @custom_field_values = nil
       @workflow_rule_by_attribute = nil
+    end
+    # Set fixed_version to the project default version if it's valid
+    if new_record? && fixed_version.nil? && project && project.default_version_id?
+      if project.shared_versions.open.exists?(project.default_version_id)
+        self.fixed_version_id = project.default_version_id
+      end
     end
     self.project
   end
@@ -454,6 +470,11 @@ class Issue < ActiveRecord::Base
       if allowed_target_projects(user).where(:id => p.to_i).exists?
         self.project_id = p
       end
+
+      if project_id_changed? && attrs['category_id'].to_s == category_id_was.to_s
+        # Discard submitted category on previous project
+        attrs.delete('category_id')
+      end
     end
 
     if (t = attrs.delete('tracker_id')) && safe_attribute?('tracker_id')
@@ -465,11 +486,26 @@ class Issue < ActiveRecord::Base
       self.tracker ||= project.trackers.first
     end
 
+    statuses_allowed = new_statuses_allowed_to(user)
     if (s = attrs.delete('status_id')) && safe_attribute?('status_id')
-      if new_statuses_allowed_to(user).collect(&:id).include?(s.to_i)
+      if statuses_allowed.collect(&:id).include?(s.to_i)
         self.status_id = s
       end
     end
+    if new_record? && !statuses_allowed.include?(status)
+      self.status = statuses_allowed.first || default_status
+    end
+    if (u = attrs.delete('assigned_to_id')) && safe_attribute?('assigned_to_id')
+      if u.blank?
+        self.assigned_to_id = nil
+      else
+        u = u.to_i
+        if assignable_users.any?{|assignable_user| assignable_user.id == u}
+          self.assigned_to_id = u
+        end
+      end
+    end
+
 
     attrs = delete_unsafe_attributes(attrs, user)
     return if attrs.empty?
@@ -661,6 +697,8 @@ class Issue < ActiveRecord::Base
         end
       else
         if respond_to?(attribute) && send(attribute).blank? && !disabled_core_fields.include?(attribute)
+          next if attribute == 'category_id' && project.try(:issue_categories).blank?
+          next if attribute == 'fixed_version_id' && assignable_versions.blank?
           errors.add attribute, :blank
         end
       end
@@ -783,7 +821,7 @@ class Issue < ActiveRecord::Base
   # Users the issue can be assigned to
   def assignable_users
     users = project.assignable_users.to_a
-    users << author if author
+    users << author if author && author.active?
     users << assigned_to if assigned_to
     users.uniq.sort
   end
@@ -825,7 +863,7 @@ class Issue < ActiveRecord::Base
     else
       initial_status = nil
       if new_record?
-        initial_status = default_status
+        # nop
       elsif tracker_id_changed?
         if Tracker.where(:id => tracker_id_was, :default_status_id => status_id_was).any?
           initial_status = default_status
@@ -843,16 +881,15 @@ class Issue < ActiveRecord::Base
         (user.id == initial_assigned_to_id || user.group_ids.include?(initial_assigned_to_id))
 
       statuses = []
-      if initial_status
-        statuses += initial_status.find_new_statuses_allowed_to(
-          user.admin ? Role.all.to_a : user.roles_for_project(project),
-          tracker,
-          author == user,
-          assignee_transitions_allowed
-          )
-      end
+      statuses += IssueStatus.new_statuses_allowed(
+        initial_status,
+        user.admin ? Role.all.to_a : user.roles_for_project(project),
+        tracker,
+        author == user,
+        assignee_transitions_allowed
+      )
       statuses << initial_status unless statuses.empty?
-      statuses << default_status if include_default
+      statuses << default_status if include_default || (new_record? && statuses.empty?)
       statuses = statuses.compact.uniq.sort
       if blocked?
         statuses.reject!(&:is_closed?)
@@ -868,6 +905,11 @@ class Issue < ActiveRecord::Base
     if user_id && user_id != assigned_to_id
       @assigned_to_was ||= Principal.find_by_id(user_id)
     end
+  end
+
+  # Returns the original tracker
+  def tracker_was
+    Tracker.find_by_id(tracker_id_was)
   end
 
   # Returns the users that should be notified
@@ -909,6 +951,14 @@ class Issue < ActiveRecord::Base
         yield(users)
       end
     end
+  end
+
+  def notify?
+    @notify != false
+  end
+
+  def notify=(arg)
+    @notify = arg
   end
 
   # Returns the number of hours spent on this issue
@@ -1370,7 +1420,7 @@ class Issue < ActiveRecord::Base
     if current_project
       condition = ["(#{condition}) OR #{Project.table_name}.id = ?", current_project.id]
     end
-    Project.where(condition)
+    Project.where(condition).having_trackers
   end
 
   private
@@ -1490,16 +1540,16 @@ class Issue < ActiveRecord::Base
       if p.done_ratio_derived?
         # done ratio = weighted average ratio of leaves
         unless Issue.use_status_for_done_ratio? && p.status && p.status.default_done_ratio
-          leaves_count = p.leaves.count
-          if leaves_count > 0
-            average = p.leaves.where("estimated_hours > 0").average(:estimated_hours).to_f
+          child_count = p.children.count
+          if child_count > 0
+            average = p.children.where("estimated_hours > 0").average(:estimated_hours).to_f
             if average == 0
               average = 1
             end
-            done = p.leaves.joins(:status).
+            done = p.children.joins(:status).
               sum("COALESCE(CASE WHEN estimated_hours > 0 THEN estimated_hours ELSE NULL END, #{average}) " +
                   "* (CASE WHEN is_closed = #{self.class.connection.quoted_true} THEN 100 ELSE COALESCE(done_ratio, 0) END)").to_f
-            progress = done / (average * leaves_count)
+            progress = done / (average * child_count)
             p.done_ratio = progress.round
           end
         end
@@ -1587,6 +1637,7 @@ class Issue < ActiveRecord::Base
         # Same user and notes
         if @current_journal
           duplicate.init_journal(@current_journal.user, @current_journal.notes)
+          duplicate.private_notes = @current_journal.private_notes
         end
         duplicate.update_attribute :status, self.status
       end
@@ -1622,7 +1673,7 @@ class Issue < ActiveRecord::Base
   end
 
   def send_notification
-    if Setting.notified_events.include?('issue_added')
+    if notify? && Setting.notified_events.include?('issue_added')
       Mailer.deliver_issue_add(self)
     end
   end

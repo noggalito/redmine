@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -215,7 +215,7 @@ class ChangesetTest < ActiveSupport::TestCase
     end
   end
 
-  def test_update_keywords_with_multiple_rules_should_match_tracker
+  def test_update_keywords_with_multiple_rules_for_the_same_keyword_should_match_tracker
     with_settings :commit_update_keywords => [
       {'keywords' => 'fixes', 'status_id' => '5', 'if_tracker_id' => '2'},
       {'keywords' => 'fixes', 'status_id' => '3', 'if_tracker_id' => ''}
@@ -226,6 +226,24 @@ class ChangesetTest < ActiveSupport::TestCase
       Changeset.generate!(:comments => "Fixes ##{issue1.id}, ##{issue2.id}")
       assert_equal 5, issue1.reload.status_id
       assert_equal 3, issue2.reload.status_id
+    end
+  end
+
+  def test_update_keywords_with_multiple_rules_for_the_same_tracker_should_match_keyword
+    with_settings :commit_update_keywords => [
+      {'keywords' => 'Fixes, Closes', 'status_id' => '5', 'done_ratio' => '100', 'if_tracker_id' => '2'},
+      {'keywords' => 'Testing',       'status_id' => '3', 'done_ratio' => '90',  'if_tracker_id' => '2'}
+    ] do
+
+      issue1 = Issue.generate!(:tracker_id => 2)
+      issue2 = Issue.generate!(:tracker_id => 2)
+      Changeset.generate!(:comments => "Testing ##{issue1.id}, Fixes ##{issue2.id}")
+      issue1.reload
+      assert_equal 3, issue1.status_id
+      assert_equal 90, issue1.done_ratio
+      issue2.reload
+      assert_equal 5, issue2.status_id
+      assert_equal 100, issue2.done_ratio
     end
   end
 

@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -84,6 +84,14 @@ module QueriesHelper
     tags
   end
 
+  def available_totalable_columns_tags(query)
+    tags = ''.html_safe
+    query.available_totalable_columns.each do |column|
+      tags << content_tag('label', check_box_tag('t[]', column.name.to_s, query.totalable_columns.include?(column), :id => nil) + " #{column.caption}", :class => 'inline')
+    end
+    tags
+  end
+
   def query_available_inline_columns_options(query)
     (query.available_inline_columns - query.columns).reject(&:frozen?).collect {|column| [column.caption, column.name]}
   end
@@ -95,6 +103,20 @@ module QueriesHelper
   def render_query_columns_selection(query, options={})
     tag_name = (options[:name] || 'c') + '[]'
     render :partial => 'queries/columns', :locals => {:query => query, :tag_name => tag_name}
+  end
+
+  def render_query_totals(query)
+    return unless query.totalable_columns.present?
+    totals = query.totalable_columns.map do |column|
+      total_tag(column, query.total_for(column))
+    end
+    content_tag('p', totals.join(" ").html_safe, :class => "query-totals")
+  end
+
+  def total_tag(column, value)
+    label = content_tag('span', "#{column.caption}:")
+    value = content_tag('span', format_object(value), :class => 'value')
+    content_tag('span', label + " " + value, :class => "total-for-#{column.name.to_s.dasherize}")
   end
 
   def column_header(column)
@@ -123,7 +145,7 @@ module QueriesHelper
     when :description
       issue.description? ? content_tag('div', textilizable(issue, :description), :class => "wiki") : ''
     when :done_ratio
-      progress_bar(value, :width => '80px')
+      progress_bar(value)
     when :relations
       content_tag('span',
         value.to_s(issue) {|other| link_to_issue(other, :subject => false, :tracker => false)}.html_safe,
@@ -162,6 +184,7 @@ module QueriesHelper
   end
 
   def query_to_csv(items, query, options={})
+    options ||= {}
     columns = (options[:columns] == 'all' ? query.available_inline_columns : query.inline_columns)
     query.available_block_columns.each do |column|
       if options[column.name].present?
@@ -194,12 +217,12 @@ module QueriesHelper
       @query = IssueQuery.new(:name => "_")
       @query.project = @project
       @query.build_from_params(params)
-      session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names}
+      session[:query] = {:project_id => @query.project_id, :filters => @query.filters, :group_by => @query.group_by, :column_names => @query.column_names, :totalable_names => @query.totalable_names}
     else
       # retrieve from session
       @query = nil
       @query = IssueQuery.find_by_id(session[:query][:id]) if session[:query][:id]
-      @query ||= IssueQuery.new(:name => "_", :filters => session[:query][:filters], :group_by => session[:query][:group_by], :column_names => session[:query][:column_names])
+      @query ||= IssueQuery.new(:name => "_", :filters => session[:query][:filters], :group_by => session[:query][:group_by], :column_names => session[:query][:column_names], :totalable_names => session[:query][:totalable_names])
       @query.project = @project
     end
   end
@@ -210,7 +233,7 @@ module QueriesHelper
         @query = IssueQuery.find_by_id(session[:query][:id])
         return unless @query
       else
-        @query = IssueQuery.new(:name => "_", :filters => session[:query][:filters], :group_by => session[:query][:group_by], :column_names => session[:query][:column_names])
+        @query = IssueQuery.new(:name => "_", :filters => session[:query][:filters], :group_by => session[:query][:group_by], :column_names => session[:query][:column_names], :totalable_names => session[:query][:totalable_names])
       end
       if session[:query].has_key?(:project_id)
         @query.project_id = session[:query][:project_id]
@@ -219,5 +242,35 @@ module QueriesHelper
       end
       @query
     end
+  end
+
+  # Returns the query definition as hidden field tags
+  def query_as_hidden_field_tags(query)
+    tags = hidden_field_tag("set_filter", "1", :id => nil)
+
+    if query.filters.present?
+      query.filters.each do |field, filter|
+        tags << hidden_field_tag("f[]", field, :id => nil)
+        tags << hidden_field_tag("op[#{field}]", filter[:operator], :id => nil)
+        filter[:values].each do |value|
+          tags << hidden_field_tag("v[#{field}][]", value, :id => nil)
+        end
+      end
+    end
+    if query.column_names.present?
+      query.column_names.each do |name|
+        tags << hidden_field_tag("c[]", name, :id => nil)
+      end
+    end
+    if query.totalable_names.present?
+      query.totalable_names.each do |name|
+        tags << hidden_field_tag("t[]", name, :id => nil)
+      end
+    end
+    if query.group_by.present?
+      tags << hidden_field_tag("group_by", query.group_by, :id => nil)
+    end
+
+    tags
   end
 end

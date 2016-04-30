@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -35,8 +35,8 @@ class GroupsHelperTest < ActionView::TestCase
     group = Group.generate!
 
     result = render_principals_for_new_group_users(group, 3)
-    assert_select_in result, 'p.pagination'
-    assert_select_in result, 'span.current.page', :text => '1'
+    assert_select_in result, 'span.pagination'
+    assert_select_in result, 'span.pagination li.current span', :text => '1'
     assert_select_in result, 'a[href=?]', "/groups/#{group.id}/autocomplete_for_user.js?page=2", :text => '2'
   end
 end

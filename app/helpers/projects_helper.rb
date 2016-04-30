@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -85,6 +85,14 @@ module ProjectsHelper
     else
       options_for_select((grouped.values.first || []), selected)
     end
+  end
+
+  def project_default_version_options(project)
+    versions = project.shared_versions.open.to_a
+    if project.default_version && !versions.include?(project.default_version)
+      versions << project.default_version
+    end
+    version_options_for_select(versions, project.default_version)
   end
 
   def format_version_sharing(sharing)

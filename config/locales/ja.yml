@@ -126,31 +126,31 @@ ja:
         body: "次の項目を確認してください。"
 
       messages:
-        inclusion: "は一覧にありません。"
-        exclusion: "は予約されています。"
-        invalid: "は不正な値です。"
-        confirmation: "が一致しません。"
-        accepted: "を受諾してください。"
-        empty: "を入力してください。"
-        blank: "を入力してください。"
-        too_long: "は%{count}文字以内で入力してください。"
-        too_short: "は%{count}文字以上で入力してください。"
-        wrong_length: "は%{count}文字で入力してください。"
-        taken: "はすでに存在します。"
-        not_a_number: "は数値で入力してください。"
-        not_a_date: "は日付を入力してください。"
-        greater_than: "は%{count}より大きい値にしてください。"
-        greater_than_or_equal_to: "は%{count}以上の値にしてください。"
-        equal_to: "は%{count}にしてください。"
-        less_than: "は%{count}より小さい値にしてください。"
-        less_than_or_equal_to: "は%{count}以下の値にしてください。"
-        odd: "は奇数にしてください。"
-        even: "は偶数にしてください。"
-        greater_than_start_date: "を開始日より後にしてください。"
-        not_same_project: "同じプロジェクトに属していません。"
-        circular_dependency: "この関係では、循環依存になります。"
-        cant_link_an_issue_with_a_descendant: "親子関係にあるチケット間での関連の設定はできません。"
-        earlier_than_minimum_start_date: "を%{date}より前にすることはできません。先行するチケットがあります。"
+        inclusion: "は一覧にありません"
+        exclusion: "は予約されています"
+        invalid: "は不正な値です"
+        confirmation: "が一致しません"
+        accepted: "を受諾してください"
+        empty: "を入力してください"
+        blank: "を入力してください"
+        too_long: "は%{count}文字以内で入力してください"
+        too_short: "は%{count}文字以上で入力してください"
+        wrong_length: "は%{count}文字で入力してください"
+        taken: "はすでに存在します"
+        not_a_number: "は数値で入力してください"
+        not_a_date: "は日付を入力してください"
+        greater_than: "は%{count}より大きい値にしてください"
+        greater_than_or_equal_to: "は%{count}以上の値にしてください"
+        equal_to: "は%{count}にしてください"
+        less_than: "は%{count}より小さい値にしてください"
+        less_than_or_equal_to: "は%{count}以下の値にしてください"
+        odd: "は奇数にしてください"
+        even: "は偶数にしてください"
+        greater_than_start_date: "を開始日より後にしてください"
+        not_same_project: "同じプロジェクトに属していません"
+        circular_dependency: "この関係では、循環依存になります"
+        cant_link_an_issue_with_a_descendant: "親子関係にあるチケット間での関連の設定はできません"
+        earlier_than_minimum_start_date: "を%{date}より前にすることはできません。先行するチケットがあります"
 
   actionview_instancetag_blank_option: 選んでください
 
@@ -163,6 +163,7 @@ ja:
   general_csv_decimal_separator: '.'
   general_csv_encoding: CP932
   general_pdf_fontname: kozminproregular
+  general_pdf_monospaced_fontname: kozminproregular
   general_first_day_of_week: '7'
 
   notice_account_updated: アカウントが更新されました。
@@ -186,8 +187,8 @@ ja:
   notice_email_error: "メール送信中にエラーが発生しました (%{value})"
   notice_feeds_access_key_reseted: Atomアクセスキーを初期化しました。
   notice_api_access_key_reseted: APIアクセスキーを初期化しました。
-  notice_failed_to_save_issues: "全%{total}件中%{count}件のチケットが保存できませんでした: %{ids}."
-  notice_failed_to_save_members: "メンバーの保存に失敗しました: %{errors}."
+  notice_failed_to_save_issues: "全%{total}件中%{count}件のチケットが保存できませんでした: %{ids}。"
+  notice_failed_to_save_members: "メンバーの保存に失敗しました: %{errors}。"
   notice_no_issue_selected: "チケットが選択されていません! 更新対象のチケットを選択してください。"
   notice_account_pending: アカウントを作成しました。システム管理者の承認待ちです。
   notice_default_data_loaded: デフォルト設定をロードしました。
@@ -423,7 +424,7 @@ ja:
   permission_view_time_entries: 作業時間の閲覧
   permission_edit_time_entries: 作業時間の編集
   permission_edit_own_time_entries: 自身が記入した作業時間の編集
-  permission_manage_project_activities: 作業分類 (時間トラッキング) の管理
+  permission_manage_project_activities: 作業分類 (時間管理) の管理
   permission_manage_news: ニュースの管理
   permission_comment_news: ニュースへのコメント
   permission_view_documents: 文書の閲覧
@@ -452,7 +453,7 @@ ja:
   permission_manage_subtasks: 子チケットの管理
 
   project_module_issue_tracking: チケットトラッキング
-  project_module_time_tracking: 時間トラッキング
+  project_module_time_tracking: 時間管理
   project_module_news: ニュース
   project_module_documents: 文書
   project_module_files: ファイル
@@ -479,7 +480,7 @@ ja:
   label_issue: チケット
   label_issue_new: 新しいチケット
   label_issue_plural: チケット
-  label_issue_view_all: すべてのチケットを見る
+  label_issue_view_all: すべてのチケットを表示
   label_issues_by: "%{value} 別のチケット"
   label_issue_added: チケットの追加
   label_issue_updated: チケットの更新
@@ -542,7 +543,7 @@ ja:
   label_subproject_new: 新しいサブプロジェクト
   label_and_its_subprojects: "%{value} とサブプロジェクト"
   label_min_max_length: 最短 - 最大長
-  label_list: リストから選択
+  label_list: リスト
   label_date: 日付
   label_integer: 整数
   label_float: 小数
@@ -565,7 +566,7 @@ ja:
   label_news_new: ニュースを追加
   label_news_plural: ニュース
   label_news_latest: 最新ニュース
-  label_news_view_all: すべてのニュースを見る
+  label_news_view_all: すべてのニュースを表示
   label_news_added: ニュースの追加
   label_news_comment_added: ニュースへのコメント追加
   label_settings: 設定
@@ -582,10 +583,6 @@ ja:
   label_open_issues_plural: 未完了
   label_closed_issues: 完了
   label_closed_issues_plural: 完了
-  label_x_open_issues_abbr_on_total:
-    zero:  0件未完了 / 全%{total}件
-    one:   1件未完了 / 全%{total}件
-    other: "%{count}件未完了 / 全%{total}件"
   label_x_open_issues_abbr:
     zero:  0件未完了
     one:   1件未完了
@@ -611,7 +608,7 @@ ja:
   label_gantt: ガントチャート
   label_internal: 内部
   label_last_changes: "最新の変更 %{count}件"
-  label_change_view_all: すべての変更を見る
+  label_change_view_all: すべての変更を表示
   label_personalize_page: このページをパーソナライズする
   label_comment: コメント
   label_comment_plural: コメント
@@ -667,8 +664,8 @@ ja:
   label_deleted: 削除
   label_latest_revision: 最新リビジョン
   label_latest_revision_plural: 最新リビジョン
-  label_view_revisions: リビジョンを見る
-  label_view_all_revisions: すべてのリビジョンを見る
+  label_view_revisions: リビジョンを表示
+  label_view_all_revisions: すべてのリビジョンを表示
   label_max_size: サイズの上限
   label_sort_highest: 一番上へ
   label_sort_higher: 上へ
@@ -697,13 +694,13 @@ ja:
   label_overall_spent_time: すべての作業時間
   label_f_hour: "%{value}時間"
   label_f_hour_plural: "%{value}時間"
-  label_time_tracking: 時間トラッキング
+  label_time_tracking: 時間管理
   label_change_plural: 変更
   label_statistics: 統計
   label_commits_per_month: 月別のコミット
   label_commits_per_author: 起票者別のコミット
   label_diff: 差分
-  label_view_diff: 差分を見る
+  label_view_diff: 差分を表示
   label_diff_inline: インライン
   label_diff_side_by_side: 横に並べる
   label_options: オプション
@@ -718,14 +715,10 @@ ja:
   label_relates_to: 関連している
   label_duplicates: 次のチケットと重複
   label_duplicated_by: 次のチケットが重複
-  label_blocks: ブロックしている
-  label_blocked_by: ブロックされている
+  label_blocks: ブロック先
+  label_blocked_by: ブロック元
   label_precedes: 次のチケットに先行
   label_follows: 次のチケットに後続
-  label_end_to_start: 最後-最初
-  label_end_to_end: 最後-最後
-  label_start_to_start: 最初-最初
-  label_start_to_end: 最初-最後
   label_stay_logged_in: ログインを維持
   label_disabled: 無効
   label_show_completed_versions: 完了したバージョンを表示
@@ -929,7 +922,7 @@ ja:
   text_destroy_time_entries: 記録された作業時間を含めて削除
   text_assign_time_entries_to_project: 記録された作業時間をプロジェクト自体に割り当て
   text_reassign_time_entries: '記録された作業時間をこのチケットに再割り当て：'
-  text_user_wrote: "%{value} は書きました:"
+  text_user_wrote: "%{value} さんは書きました:"
   text_enumeration_destroy_question: "%{count}個のオブジェクトがこの値に割り当てられています。"
   text_enumeration_category_reassign_to: '次の値に割り当て直す:'
   text_email_delivery_not_configured: "メールを送信するために必要な設定が行われていないため、メール通知は利用できません。\nconfig/configuration.ymlでSMTPサーバの設定を行い、アプリケーションを再起動してください。"
@@ -976,7 +969,7 @@ ja:
 
   enumeration_issue_priorities: チケットの優先度
   enumeration_doc_categories: 文書カテゴリ
-  enumeration_activities: 作業分類 (時間トラッキング)
+  enumeration_activities: 作業分類 (時間管理)
   enumeration_system_activity: システム作業分類
   label_additional_workflow_transitions_for_assignee: チケット担当者に追加で許可する遷移
   label_additional_workflow_transitions_for_author: チケット作成者に追加で許可する遷移
@@ -1024,7 +1017,7 @@ ja:
   button_export: エクスポート
   label_export_options: "%{export_format} エクスポート設定"
   error_attachment_too_big: このファイルはアップロードできません。添付ファイルサイズの上限(%{max_size})を超えています。
-  notice_failed_to_save_time_entries: "全%{total}件中%{count}件の作業時間が保存できませんでした: %{ids}."
+  notice_failed_to_save_time_entries: "全%{total}件中%{count}件の作業時間が保存できませんでした: %{ids}。"
   label_x_issues:
     zero:  0 チケット
     one:   1 チケット
@@ -1170,4 +1163,35 @@ ja:
   label_member_management_selected_roles_only: 次のロールのみ
   label_password_required: この操作を続行するにはパスワードを入力してください
   label_total_spent_time: 合計作業時間
+  notice_import_finished: '%{count}件の項目をすべてインポートしました。'
+  notice_import_finished_with_errors: ! '全%{total}件中%{count}件の項目がインポートできませんでした。'
+  error_invalid_file_encoding: このファイルのエンコーディングは正しい%{encoding}ではありません
+  error_invalid_csv_file_or_settings: このファイルはCSVファイルではないか、以下の設定と一致していません
+  error_can_not_read_import_file: インポート元のファイルを読み込み中にエラーが発生しました
+  permission_import_issues: チケットのインポート
+  label_import_issues: チケットのインポート
+  label_select_file_to_import: インポートするファイルを選択してください
+  label_fields_separator: 区切り文字
+  label_fields_wrapper: 文字列の引用符
+  label_encoding: エンコーディング
+  label_comma_char: コンマ
+  label_semi_colon_char: セミコロン
+  label_quote_char: シングルクォート
+  label_double_quote_char: ダブルクォート
+  label_fields_mapping: フィールドの対応関係
+  label_file_content_preview: ファイル内容のプレビュー
+  label_create_missing_values: 存在しない値は新規作成
+  button_import: インポート
   field_total_estimated_hours: 合計予定工数
+  label_api: API
+  label_total_plural: 合計
+  label_assigned_issues: 担当しているチケット
+  label_field_format_enumeration: キー・バリュー リスト
+  label_f_hour_short: '%{value}時間'
+  field_default_version: デフォルトのバージョン
+  error_attachment_extension_not_allowed: 拡張子が %{extension} のファイルの添付は禁止されています
+  setting_attachment_extensions_allowed: 許可する拡張子
+  setting_attachment_extensions_denied: 禁止する拡張子
+  label_any_open_issues: 未完了のチケット
+  label_no_open_issues: なし または完了したチケット
+  label_default_values_for_new_users: 新しいユーザーのデフォルト設定

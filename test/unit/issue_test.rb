@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -418,6 +418,22 @@ class IssueTest < ActiveSupport::TestCase
     assert_equal 0, Issue.fixed_version([]).count
   end
 
+  def test_assigned_to_scope_should_return_issues_assigned_to_the_user
+    user = User.generate!
+    issue = Issue.generate!
+    Issue.where(:id => issue.id).update_all :assigned_to_id => user.id
+    assert_equal [issue], Issue.assigned_to(user).to_a
+  end
+
+  def test_assigned_to_scope_should_return_issues_assigned_to_the_user_groups
+    group = Group.generate!
+    user = User.generate!
+    group.users << user
+    issue = Issue.generate!
+    Issue.where(:id => issue.id).update_all :assigned_to_id => group.id
+    assert_equal [issue], Issue.assigned_to(user).to_a
+  end
+
   def test_errors_full_messages_should_include_custom_fields_errors
     field = IssueCustomField.find_by_name('Database')
 
@@ -478,6 +494,14 @@ class IssueTest < ActiveSupport::TestCase
     assert issue.save
     issue.reload
     assert_equal custom_value.id, issue.custom_value_for(field).id
+  end
+
+  def test_setting_project_should_set_version_to_default_version
+    version = Version.generate!(:project_id => 1)
+    Project.find(1).update_attribute(:default_version_id, version.id)
+
+    issue = Issue.new(:project_id => 1)
+    assert_equal version, issue.fixed_version
   end
 
   def test_should_not_update_custom_fields_on_changing_tracker_with_different_custom_fields
@@ -766,6 +790,40 @@ class IssueTest < ActiveSupport::TestCase
     assert_nil issue.custom_field_value(cf2)
   end
 
+  def test_safe_attributes_should_ignore_unassignable_assignee
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3,
+                      :status_id => 1, :priority => IssuePriority.all.first,
+                      :subject => 'test_create')
+    assert issue.valid?
+
+    # locked user, not allowed
+    issue.safe_attributes=({'assigned_to_id' => '5'})
+    assert_nil issue.assigned_to_id
+    # no member
+    issue.safe_attributes=({'assigned_to_id' => '1'})
+    assert_nil issue.assigned_to_id
+    # user 2 is ok
+    issue.safe_attributes=({'assigned_to_id' => '2'})
+    assert_equal 2, issue.assigned_to_id
+    assert issue.save
+
+    issue.reload
+    assert_equal 2, issue.assigned_to_id
+    issue.safe_attributes=({'assigned_to_id' => '5'})
+    assert_equal 2, issue.assigned_to_id
+    issue.safe_attributes=({'assigned_to_id' => '1'})
+    assert_equal 2, issue.assigned_to_id
+    # user 3 is also ok
+    issue.safe_attributes=({'assigned_to_id' => '3'})
+    assert_equal 3, issue.assigned_to_id
+    assert issue.save
+
+    # removal of assignee
+    issue.safe_attributes=({'assigned_to_id' => ''})
+    assert_nil issue.assigned_to_id
+    assert issue.save
+  end
+
   def test_editable_custom_field_values_should_return_non_readonly_custom_values
     cf1 = IssueCustomField.create!(:name => 'Writable field', :field_format => 'string',
                                    :is_for_all => true, :tracker_ids => [1, 2])
@@ -908,6 +966,30 @@ class IssueTest < ActiveSupport::TestCase
     issue = Issue.new(:project_id => 1, :tracker_id => 1, :status_id => 1,
                       :subject => 'Required fields', :author => user)
     assert issue.save
+  end
+
+  def test_category_should_not_be_required_if_project_has_no_categories
+    Project.find(1).issue_categories.delete_all
+    WorkflowPermission.delete_all
+    WorkflowPermission.create!(:old_status_id => 1, :tracker_id => 1,
+      :role_id => 1, :field_name => 'category_id',:rule => 'required')
+    user = User.find(2)
+
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :status_id => 1,
+                      :subject => 'Required fields', :author => user)
+    assert_save issue
+  end
+
+  def test_fixed_version_should_not_be_required_no_assignable_versions
+    Version.delete_all
+    WorkflowPermission.delete_all
+    WorkflowPermission.create!(:old_status_id => 1, :tracker_id => 1,
+      :role_id => 1, :field_name => 'fixed_version_id',:rule => 'required')
+    user = User.find(2)
+
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :status_id => 1,
+                      :subject => 'Required fields', :author => user)
+    assert_save issue
   end
 
   def test_required_custom_field_that_is_not_visible_for_the_user_should_not_be_required
@@ -1226,6 +1308,24 @@ class IssueTest < ActiveSupport::TestCase
     assert issue3.reload.closed?
   end
 
+  def test_should_close_duplicates_with_private_notes
+    issue = Issue.generate!
+    duplicate = Issue.generate!
+    IssueRelation.create!(:issue_from => duplicate, :issue_to => issue,
+                          :relation_type => IssueRelation::TYPE_DUPLICATES)
+    assert issue.reload.duplicates.include?(duplicate)
+
+    # Closing issue with private notes
+    issue.init_journal(User.first, "Private notes")
+    issue.private_notes = true
+    issue.status = IssueStatus.where(:is_closed => true).first
+    assert_save issue
+
+    duplicate.reload
+    assert journal = duplicate.journals.detect {|journal| journal.notes == "Private notes"}
+    assert_equal true, journal.private_notes
+  end
+
   def test_should_not_close_duplicated_issue
     issue1 = Issue.generate!
     issue2 = Issue.generate!
@@ -1329,6 +1429,12 @@ class IssueTest < ActiveSupport::TestCase
   def test_allowed_target_projects_should_not_include_projects_with_issue_tracking_disabled
     Project.find(2).disable_module! :issue_tracking
     assert_not_include Project.find(2), Issue.allowed_target_projects(User.find(2))
+  end
+
+  def test_allowed_target_projects_should_not_include_projects_without_trackers
+    project = Project.generate!(:tracker_ids => [])
+    assert project.trackers.empty?
+    assert_not_include project, Issue.allowed_target_projects(User.find(1))
   end
 
   def test_move_to_another_project_with_same_category
@@ -1873,6 +1979,20 @@ class IssueTest < ActiveSupport::TestCase
     issue = Issue.generate!(:author => non_project_member)
 
     assert issue.assignable_users.include?(non_project_member)
+  end
+
+  def test_assignable_users_should_not_include_anonymous_user
+    issue = Issue.generate!(:author => User.anonymous)
+
+    assert !issue.assignable_users.include?(User.anonymous)
+  end
+
+  def test_assignable_users_should_not_include_locked_user
+    user = User.generate!
+    issue = Issue.generate!(:author => user)
+    user.lock!
+
+    assert !issue.assignable_users.include?(user)
   end
 
   test "#assignable_users should include the current assignee" do

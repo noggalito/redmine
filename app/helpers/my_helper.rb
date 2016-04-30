@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -33,12 +33,11 @@ module MyHelper
 
   def issuesassignedtome_items
     Issue.visible.open.
-      where(:assigned_to_id => ([User.current.id] + User.current.group_ids)).
+      assigned_to(User.current).
       limit(10).
       includes(:status, :project, :tracker, :priority).
       references(:status, :project, :tracker, :priority).
-      order("#{IssuePriority.table_name}.position DESC, #{Issue.table_name}.updated_on DESC").
-      to_a
+      order("#{IssuePriority.table_name}.position DESC, #{Issue.table_name}.updated_on DESC")
   end
 
   def issuesreportedbyme_items
@@ -47,12 +46,11 @@ module MyHelper
       limit(10).
       includes(:status, :project, :tracker).
       references(:status, :project, :tracker).
-      order("#{Issue.table_name}.updated_on DESC").
-      to_a
+      order("#{Issue.table_name}.updated_on DESC")
   end
 
   def issueswatched_items
-    Issue.visible.on_active_project.watched_by(User.current.id).recently_updated.limit(10).to_a
+    Issue.visible.on_active_project.watched_by(User.current.id).recently_updated.limit(10)
   end
 
   def news_items

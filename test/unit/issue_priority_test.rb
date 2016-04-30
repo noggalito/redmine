@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -97,6 +97,20 @@ class IssuePriorityTest < ActiveSupport::TestCase
   def test_adding_a_priority_should_update_position_names
     priority = IssuePriority.create!(:name => 'New')
     assert_equal %w(lowest default high4 high3 high2 highest), IssuePriority.active.to_a.sort.map(&:position_name)
+  end
+
+  def test_moving_a_priority_should_update_position_names
+    prio = IssuePriority.first
+    prio.move_to = 'lowest'
+    prio.reload
+    assert_equal 'highest', prio.position_name
+  end
+
+  def test_deactivating_a_priority_should_update_position_names
+    prio = IssuePriority.active.order(:position).last
+    prio.active = false
+    prio.save
+    assert_equal 'highest', IssuePriority.active.order(:position).last.position_name
   end
 
   def test_destroying_a_priority_should_update_position_names

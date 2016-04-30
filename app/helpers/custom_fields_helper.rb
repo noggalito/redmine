@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -49,6 +49,15 @@ module CustomFieldsHelper
 
   def custom_field_type_options
     CUSTOM_FIELDS_TABS.map {|h| [l(h[:label]), h[:name]]}
+  end
+
+  def custom_field_title(custom_field)
+    items = []
+    items << [l(:label_custom_field_plural), custom_fields_path]
+    items << [l(custom_field.type_name), custom_fields_path(:tab => custom_field.class.name)] if custom_field
+    items << (custom_field.nil? || custom_field.new_record? ? l(:label_custom_field_new) : custom_field.name) 
+
+    title(*items)
   end
 
   def render_custom_field_format_partial(form, custom_field)

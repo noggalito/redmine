@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -40,11 +40,10 @@ class MailHandlerTest < ActiveSupport::TestCase
     Setting.clear_cache
   end
 
-  def test_add_issue
-    ActionMailer::Base.deliveries.clear
-    lft1 = new_issue_lft
-    # This email contains: 'Project: onlinestore'
-    issue = submit_email('ticket_on_given_project.eml')
+  def test_add_issue_with_specific_overrides
+    issue = submit_email('ticket_on_given_project.eml',
+      :allow_override => ['status', 'start_date', 'due_date', 'assigned_to', 'fixed_version', 'estimated_hours', 'done_ratio']
+    )
     assert issue.is_a?(Issue)
     assert !issue.new_record?
     issue.reload
@@ -60,16 +59,62 @@ class MailHandlerTest < ActiveSupport::TestCase
     assert_equal Version.find_by_name('Alpha'), issue.fixed_version
     assert_equal 2.5, issue.estimated_hours
     assert_equal 30, issue.done_ratio
-    assert_equal [issue.id, lft1, lft1 + 1], [issue.root_id, issue.lft, issue.rgt]
     # keywords should be removed from the email body
     assert !issue.description.match(/^Project:/i)
     assert !issue.description.match(/^Status:/i)
     assert !issue.description.match(/^Start Date:/i)
-    # Email notification should be sent
-    mail = ActionMailer::Base.deliveries.last
-    assert_not_nil mail
-    assert mail.subject.include?("##{issue.id}")
-    assert mail.subject.include?('New ticket on a given project')
+  end
+
+  def test_add_issue_with_all_overrides
+    issue = submit_email('ticket_on_given_project.eml', :allow_override => 'all')
+    assert issue.is_a?(Issue)
+    assert !issue.new_record?
+    issue.reload
+    assert_equal Project.find(2), issue.project
+    assert_equal issue.project.trackers.first, issue.tracker
+    assert_equal IssueStatus.find_by_name('Resolved'), issue.status
+    assert issue.description.include?('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.')
+    assert_equal '2010-01-01', issue.start_date.to_s
+    assert_equal '2010-12-31', issue.due_date.to_s
+    assert_equal User.find_by_login('jsmith'), issue.assigned_to
+    assert_equal Version.find_by_name('Alpha'), issue.fixed_version
+    assert_equal 2.5, issue.estimated_hours
+    assert_equal 30, issue.done_ratio
+  end
+
+  def test_add_issue_without_overrides_should_ignore_attributes
+    WorkflowRule.delete_all
+    issue = submit_email('ticket_on_given_project.eml')
+    assert issue.is_a?(Issue)
+    assert !issue.new_record?
+    issue.reload
+    assert_equal Project.find(2), issue.project
+    assert_equal 'New ticket on a given project', issue.subject
+    assert issue.description.include?('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.')
+    assert_equal User.find_by_login('jsmith'), issue.author
+
+    assert_equal issue.project.trackers.first, issue.tracker
+    assert_equal 'New', issue.status.name
+    assert_not_equal '2010-01-01', issue.start_date.to_s
+    assert_nil issue.due_date
+    assert_nil issue.assigned_to
+    assert_nil issue.fixed_version
+    assert_nil issue.estimated_hours
+    assert_equal 0, issue.done_ratio
+  end
+
+  def test_add_issue_to_project_specified_by_subaddress
+    # This email has redmine+onlinestore@somenet.foo as 'To' header
+    issue = submit_email(
+              'ticket_on_project_given_by_to_header.eml',
+              :issue => {:tracker => 'Support request'},
+              :project_from_subaddress => 'redmine@somenet.foo'
+            )
+    assert issue.is_a?(Issue)
+    assert !issue.new_record?
+    issue.reload
+    assert_equal 'onlinestore', issue.project.identifier
+    assert_equal 'Support request', issue.tracker.name
   end
 
   def test_add_issue_with_default_tracker
@@ -84,9 +129,20 @@ class MailHandlerTest < ActiveSupport::TestCase
     assert_equal 'Support request', issue.tracker.name
   end
 
-  def test_add_issue_with_status
+  def test_add_issue_with_default_version
+    # This email contains: 'Project: onlinestore'
+    issue = submit_email(
+              'ticket_on_given_project.eml',
+              :issue => {:fixed_version => 'Alpha'}
+            )
+    assert issue.is_a?(Issue)
+    assert !issue.new_record?
+    assert_equal 'Alpha', issue.reload.fixed_version.name
+  end
+
+  def test_add_issue_with_status_override
     # This email contains: 'Project: onlinestore' and 'Status: Resolved'
-    issue = submit_email('ticket_on_given_project.eml')
+    issue = submit_email('ticket_on_given_project.eml', :allow_override => ['status'])
     assert issue.is_a?(Issue)
     assert !issue.new_record?
     issue.reload
@@ -101,26 +157,9 @@ class MailHandlerTest < ActiveSupport::TestCase
     assert_equal true, issue.reload.is_private
   end
 
-  def test_add_issue_with_attributes_override
-    issue = submit_email(
-              'ticket_with_attributes.eml',
-              :allow_override => 'tracker,category,priority'
-            )
-    assert issue.is_a?(Issue)
-    assert !issue.new_record?
-    issue.reload
-    assert_equal 'New ticket on a given project', issue.subject
-    assert_equal User.find_by_login('jsmith'), issue.author
-    assert_equal Project.find(2), issue.project
-    assert_equal 'Feature request', issue.tracker.to_s
-    assert_equal 'Stock management', issue.category.to_s
-    assert_equal 'Urgent', issue.priority.to_s
-    assert issue.description.include?('Lorem ipsum dolor sit amet, consectetuer adipiscing elit.')
-  end
-
   def test_add_issue_with_group_assignment
     with_settings :issue_group_assignment => '1' do
-      issue = submit_email('ticket_on_given_project.eml') do |email|
+      issue = submit_email('ticket_on_given_project.eml', :allow_override => ['assigned_to']) do |email|
         email.gsub!('Assigned to: John Smith', 'Assigned to: B Team')
       end
       assert issue.is_a?(Issue)
@@ -182,7 +221,9 @@ class MailHandlerTest < ActiveSupport::TestCase
   end
 
   def test_add_issue_with_custom_fields
-    issue = submit_email('ticket_with_custom_fields.eml', :issue => {:project => 'onlinestore'})
+    issue = submit_email('ticket_with_custom_fields.eml',
+      :issue => {:project => 'onlinestore'}, :allow_override => ['database', 'Searchable_field']
+    )
     assert issue.is_a?(Issue)
     assert !issue.new_record?
     issue.reload
@@ -195,7 +236,9 @@ class MailHandlerTest < ActiveSupport::TestCase
   def test_add_issue_with_version_custom_fields
     field = IssueCustomField.create!(:name => 'Affected version', :field_format => 'version', :is_for_all => true, :tracker_ids => [1,2,3])
 
-    issue = submit_email('ticket_with_custom_fields.eml', :issue => {:project => 'ecookbook'}) do |email|
+    issue = submit_email('ticket_with_custom_fields.eml',
+      :issue => {:project => 'ecookbook'}, :allow_override => ['affected version']
+    ) do |email|
       email << "Affected version: 1.0\n"
     end
     assert issue.is_a?(Issue)
@@ -207,7 +250,7 @@ class MailHandlerTest < ActiveSupport::TestCase
   def test_add_issue_should_match_assignee_on_display_name
     user = User.generate!(:firstname => 'Foo Bar', :lastname => 'Foo Baz')
     User.add_to_project(user, Project.find(2))
-    issue = submit_email('ticket_on_given_project.eml') do |email|
+    issue = submit_email('ticket_on_given_project.eml', :allow_override => ['assigned_to']) do |email|
       email.sub!(/^Assigned to.*$/, 'Assigned to: Foo Bar Foo baz')
     end
     assert issue.is_a?(Issue)
@@ -293,7 +336,6 @@ class MailHandlerTest < ActiveSupport::TestCase
   end
 
   def test_add_issue_by_anonymous_user_on_private_project_without_permission_check
-    lft1 = new_issue_lft
     assert_no_difference 'User.count' do
       assert_difference 'Issue.count' do
         issue = submit_email(
@@ -305,7 +347,6 @@ class MailHandlerTest < ActiveSupport::TestCase
         assert issue.is_a?(Issue)
         assert issue.author.anonymous?
         assert !issue.project.is_public?
-        assert_equal [issue.id, lft1, lft1 + 1], [issue.root_id, issue.lft, issue.rgt]
       end
     end
   end
@@ -332,6 +373,17 @@ class MailHandlerTest < ActiveSupport::TestCase
       password = mail_body(email).match(/\* Password: (.*)$/)[1].strip
       assert_equal issue.author, User.try_to_login(login, password)
     end
+  end
+
+  def test_add_issue_should_send_notification
+    issue = submit_email('ticket_on_given_project.eml', :allow_override => 'all')
+    assert issue.is_a?(Issue)
+    assert !issue.new_record?
+
+    mail = ActionMailer::Base.deliveries.last
+    assert_not_nil mail
+    assert mail.subject.include?("##{issue.id}")
+    assert mail.subject.include?('New ticket on a given project')
   end
 
   def test_created_user_should_be_added_to_groups
@@ -665,7 +717,6 @@ class MailHandlerTest < ActiveSupport::TestCase
 
   def test_add_issue_should_send_email_notification
     Setting.notified_events = ['issue_added']
-    ActionMailer::Base.deliveries.clear
     # This email contains: 'Project: onlinestore'
     issue = submit_email('ticket_on_given_project.eml')
     assert issue.is_a?(Issue)
@@ -707,8 +758,7 @@ class MailHandlerTest < ActiveSupport::TestCase
   end
 
   def test_update_issue_with_attribute_changes
-    # This email contains: 'Status: Resolved'
-    journal = submit_email('ticket_reply_with_status.eml')
+    journal = submit_email('ticket_reply_with_status.eml', :allow_override => ['status','assigned_to','start_date','due_date', 'float field'])
     assert journal.is_a?(Journal)
     issue = Issue.find(journal.issue.id)
     assert_equal User.find_by_login('jsmith'), journal.user
@@ -747,7 +797,6 @@ class MailHandlerTest < ActiveSupport::TestCase
   end
 
   def test_update_issue_should_send_email_notification
-    ActionMailer::Base.deliveries.clear
     journal = submit_email('ticket_reply.eml')
     assert journal.is_a?(Journal)
     assert_equal 1, ActionMailer::Base.deliveries.size

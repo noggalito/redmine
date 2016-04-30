@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -276,11 +276,11 @@ RAW
 
   def test_redmine_links
     issue_link = link_to('#3', {:controller => 'issues', :action => 'show', :id => 3},
-                               :class => Issue.find(3).css_classes, :title => 'Error 281 when updating a recipe (New)')
+                               :class => Issue.find(3).css_classes, :title => 'Bug: Error 281 when updating a recipe (New)')
     note_link = link_to('#3-14', {:controller => 'issues', :action => 'show', :id => 3, :anchor => 'note-14'},
-                               :class => Issue.find(3).css_classes, :title => 'Error 281 when updating a recipe (New)')
+                               :class => Issue.find(3).css_classes, :title => 'Bug: Error 281 when updating a recipe (New)')
     note_link2 = link_to('#3#note-14', {:controller => 'issues', :action => 'show', :id => 3, :anchor => 'note-14'},
-                               :class => Issue.find(3).css_classes, :title => 'Error 281 when updating a recipe (New)')
+                               :class => Issue.find(3).css_classes, :title => 'Bug: Error 281 when updating a recipe (New)')
 
     revision_link = link_to('r1', {:controller => 'repositories', :action => 'revision', :id => 'ecookbook', :rev => 1},
                                    :class => 'changeset', :title => 'My very first commit do not escaping #<>&')
@@ -964,7 +964,7 @@ RAW
     result2 = link_to('#1',
                       "/issues/1",
                       :class => Issue.find(1).css_classes,
-                      :title => "Cannot print recipes (New)")
+                      :title => "Bug: Cannot print recipes (New)")
 
     expected = <<-EXPECTED
 <p>#{result1}</p>
@@ -992,6 +992,12 @@ EXPECTED
 
     @project = Project.find(1)
     assert_equal expected.gsub(%r{[\r\n\t]}, ''), textilizable(raw).gsub(%r{[\r\n\t]}, '')
+  end
+
+  def test_unbalanced_closing_pre_tag_should_not_error
+    assert_nothing_raised do
+      textilizable("unbalanced</pre>")
+    end
   end
 
   def test_syntax_highlight
@@ -1236,14 +1242,14 @@ RAW
     result = textilizable(raw, :edit_section_links => {:controller => 'wiki', :action => 'edit', :project_id => '1', :id => 'Test'}).gsub("\n", "")
 
     # heading that contains inline code
-    assert_match Regexp.new('<div class="contextual" title="Edit this section" id="section-4">' +
+    assert_match Regexp.new('<div class="contextual heading-2" title="Edit this section" id="section-4">' +
       '<a href="/projects/1/wiki/Test/edit\?section=4"><img src="/images/edit.png(\?\d+)?" alt="Edit" /></a></div>' +
       '<a name="Subtitle-with-inline-code"></a>' +
       '<h2 >Subtitle with <code>inline code</code><a href="#Subtitle-with-inline-code" class="wiki-anchor">&para;</a></h2>'),
       result
 
     # last heading
-    assert_match Regexp.new('<div class="contextual" title="Edit this section" id="section-5">' +
+    assert_match Regexp.new('<div class="contextual heading-2" title="Edit this section" id="section-5">' +
       '<a href="/projects/1/wiki/Test/edit\?section=5"><img src="/images/edit.png(\?\d+)?" alt="Edit" /></a></div>' +
       '<a name="Subtitle-after-pre-tag"></a>' +
       '<h2 >Subtitle after pre tag<a href="#Subtitle-after-pre-tag" class="wiki-anchor">&para;</a></h2>'),
@@ -1255,6 +1261,13 @@ RAW
       text = 'a *link*: http://www.example.net/'
       assert_equal '<p>a *link*: <a class="external" href="http://www.example.net/">http://www.example.net/</a></p>', textilizable(text)
     end
+  end
+
+  def test_parse_redmine_links_should_handle_a_tag_without_attributes
+    text = '<a>http://example.com</a>'
+    expected = text.dup
+    parse_redmine_links(text, nil, nil, nil, true, {})
+    assert_equal expected, text
   end
 
   def test_due_date_distance_in_words

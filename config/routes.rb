@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -61,13 +61,20 @@ Rails.application.routes.draw do
   get 'projects/:id/issues/report', :to => 'reports#issue_report', :as => 'project_issues_report'
   get 'projects/:id/issues/report/:detail', :to => 'reports#issue_report_details', :as => 'project_issues_report_details'
 
+  get   '/issues/imports/new', :to => 'imports#new', :as => 'new_issues_import'
+  post  '/imports', :to => 'imports#create', :as => 'imports'
+  get   '/imports/:id', :to => 'imports#show', :as => 'import'
+  match '/imports/:id/settings', :to => 'imports#settings', :via => [:get, :post], :as => 'import_settings'
+  match '/imports/:id/mapping', :to => 'imports#mapping', :via => [:get, :post], :as => 'import_mapping'
+  match '/imports/:id/run', :to => 'imports#run', :via => [:get, :post], :as => 'import_run'
+
   match 'my/account', :controller => 'my', :action => 'account', :via => [:get, :post]
   match 'my/account/destroy', :controller => 'my', :action => 'destroy', :via => [:get, :post]
   match 'my/page', :controller => 'my', :action => 'page', :via => :get
   match 'my', :controller => 'my', :action => 'index', :via => :get # Redirects to my/page
-  match 'my/reset_rss_key', :controller => 'my', :action => 'reset_rss_key', :via => :post
-  match 'my/reset_api_key', :controller => 'my', :action => 'reset_api_key', :via => :post
-  match 'my/api_key', :controller => 'my', :action => 'show_api_key', :via => :get
+  get 'my/api_key', :to => 'my#show_api_key', :as => 'my_api_key'
+  post 'my/api_key', :to => 'my#reset_api_key'
+  post 'my/rss_key', :to => 'my#reset_rss_key', :as => 'my_rss_key'
   match 'my/password', :controller => 'my', :action => 'password', :via => [:get, :post]
   match 'my/page_layout', :controller => 'my', :action => 'page_layout', :via => :get
   match 'my/add_block', :controller => 'my', :action => 'add_block', :via => :post
@@ -304,7 +311,10 @@ Rails.application.routes.draw do
       post 'update_issue_done_ratio'
     end
   end
-  resources :custom_fields, :except => :show
+  resources :custom_fields, :except => :show do
+    resources :enumerations, :controller => 'custom_field_enumerations', :except => [:show, :new, :edit]
+    put 'enumerations', :to => 'custom_field_enumerations#update_each'
+  end
   resources :roles do
     collection do
       match 'permissions', :via => [:get, :post]
@@ -320,12 +330,12 @@ Rails.application.routes.draw do
   get  'mail_handler', :to => 'mail_handler#new'
   post 'mail_handler', :to => 'mail_handler#index'
 
-  match 'admin', :controller => 'admin', :action => 'index', :via => :get
-  match 'admin/projects', :controller => 'admin', :action => 'projects', :via => :get
-  match 'admin/plugins', :controller => 'admin', :action => 'plugins', :via => :get
-  match 'admin/info', :controller => 'admin', :action => 'info', :via => :get
-  match 'admin/test_email', :controller => 'admin', :action => 'test_email', :via => :post
-  match 'admin/default_configuration', :controller => 'admin', :action => 'default_configuration', :via => :post
+  get 'admin', :to => 'admin#index'
+  get 'admin/projects', :to => 'admin#projects'
+  get 'admin/plugins', :to => 'admin#plugins'
+  get 'admin/info', :to => 'admin#info'
+  post 'admin/test_email', :to => 'admin#test_email', :as => 'test_email'
+  post 'admin/default_configuration', :to => 'admin#default_configuration'
 
   resources :auth_sources do
     member do

@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -43,7 +43,9 @@ class WorkflowsController < ApplicationController
     end
 
     if @trackers && @roles && @statuses.any?
-      workflows = WorkflowTransition.where(:role_id => @roles.map(&:id), :tracker_id => @trackers.map(&:id))
+      workflows = WorkflowTransition.
+        where(:role_id => @roles.map(&:id), :tracker_id => @trackers.map(&:id)).
+        preload(:old_status, :new_status)
       @workflows = {}
       @workflows['always'] = workflows.select {|w| !w.author && !w.assignee}
       @workflows['author'] = workflows.select {|w| w.author}

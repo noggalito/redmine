@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@ class Redmine::I18nTest < ActiveSupport::TestCase
   include ActionView::Helpers::NumberHelper
 
   def setup
-    User.current.language = nil
+    User.current = nil
   end
 
   def teardown
@@ -118,8 +118,8 @@ class Redmine::I18nTest < ActiveSupport::TestCase
     set_language_if_valid 'en'
     now = Time.now
     with_settings :date_format => '%d %m %Y', :time_format => '%H %M' do
-      assert_equal now.strftime('%d %m %Y %H %M'), format_time(now.utc)
-      assert_equal now.strftime('%H %M'), format_time(now.utc, false)
+      assert_equal now.localtime.strftime('%d %m %Y %H %M'), format_time(now.utc), "User time zone was #{User.current.time_zone}"
+      assert_equal now.localtime.strftime('%H %M'), format_time(now.utc, false)
     end
   end
 
@@ -154,12 +154,26 @@ class Redmine::I18nTest < ActiveSupport::TestCase
     end
   end
 
+  def test_l_hours_short
+    set_language_if_valid 'en'
+    assert_equal '2.00 h', l_hours_short(2.0)
+  end
+
   def test_number_to_currency_default
     set_language_if_valid 'bs'
     assert_equal "KM -1000,20", number_to_currency(-1000.2)
     set_language_if_valid 'de'
     euro_sign = "\xe2\x82\xac".force_encoding('UTF-8')
     assert_equal "-1000,20 #{euro_sign}", number_to_currency(-1000.2)
+  end
+
+  def test_lu_should_not_error_when_user_language_is_an_empty_string
+    user = User.new
+    user.language = ''
+
+    assert_nothing_raised do
+      lu(user, :label_issue)
+    end
   end
 
   def test_valid_languages

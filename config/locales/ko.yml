@@ -189,6 +189,7 @@ ko:
   general_csv_decimal_separator: '.'
   general_csv_encoding: CP949
   general_pdf_fontname: hysmyeongjostdmedium
+  general_pdf_monospaced_fontname: hysmyeongjostdmedium
   general_first_day_of_week: '7'
 
   notice_account_updated: 계정이 성공적으로 변경되었습니다.
@@ -545,10 +546,6 @@ ko:
   label_open_issues_plural: 진행중
   label_closed_issues: 완료됨
   label_closed_issues_plural: 완료됨
-  label_x_open_issues_abbr_on_total:
-    zero:  "총 %{total} 건 모두 완료"
-    one:   "한 건 진행 중 / 총 %{total} 건 중 "
-    other: "%{count} 건 진행 중 / 총 %{total} 건"
   label_x_open_issues_abbr:
     zero:  모두 완료
     one:   한 건 진행 중
@@ -678,10 +675,6 @@ ko:
   label_blocked_by: "다음 일감에게 막혀 있음:"
   label_precedes: "다음에 진행할 일감:"
   label_follows: "다음 일감을 우선 진행:"
-  label_end_to_start: "끝에서 시작"
-  label_end_to_end: "끝에서 끝"
-  label_start_to_start: "시작에서 시작" 
-  label_start_to_end: "시작에서 끝"
   label_stay_logged_in: 로그인 유지
   label_disabled: 비활성화
   label_show_completed_versions: 완료된 버전 보기
@@ -1199,4 +1192,37 @@ ko:
   label_member_management_selected_roles_only: Only these roles
   label_password_required: Confirm your password to continue
   label_total_spent_time: 총 소요시간
+  notice_import_finished: All %{count} items have been imported.
+  notice_import_finished_with_errors: ! '%{count} out of %{total} items could not be
+    imported.'
+  error_invalid_file_encoding: The file is not a valid %{encoding} encoded file
+  error_invalid_csv_file_or_settings: The file is not a CSV file or does not match the
+    settings below
+  error_can_not_read_import_file: An error occurred while reading the file to import
+  permission_import_issues: Import issues
+  label_import_issues: Import issues
+  label_select_file_to_import: Select the file to import
+  label_fields_separator: Field separator
+  label_fields_wrapper: Field wrapper
+  label_encoding: Encoding
+  label_comma_char: Comma
+  label_semi_colon_char: Semi colon
+  label_quote_char: Quote
+  label_double_quote_char: Double quote
+  label_fields_mapping: Fields mapping
+  label_file_content_preview: File content preview
+  label_create_missing_values: Create missing values
+  button_import: Import
   field_total_estimated_hours: Total estimated time
+  label_api: API
+  label_total_plural: Totals
+  label_assigned_issues: Assigned issues
+  label_field_format_enumeration: Key/value list
+  label_f_hour_short: '%{value} h'
+  field_default_version: Default version
+  error_attachment_extension_not_allowed: Attachment extension %{extension} is not allowed
+  setting_attachment_extensions_allowed: Allowed extensions
+  setting_attachment_extensions_denied: Disallowed extensions
+  label_any_open_issues: any open issues
+  label_no_open_issues: no open issues
+  label_default_values_for_new_users: Default values for new users

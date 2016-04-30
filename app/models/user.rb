@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -47,7 +47,7 @@ class User < Principal
         :order => %w(lastname firstname id),
         :setting_order => 4
       },
-    :lastname_coma_firstname => {
+    :lastname_comma_firstname => {
         :string => '#{lastname}, #{firstname}',
         :order => %w(lastname firstname id),
         :setting_order => 5
@@ -392,6 +392,26 @@ class User < Principal
       create_api_token(:action => 'api')
     end
     api_token.value
+  end
+
+  # Generates a new session token and returns its value
+  def generate_session_token
+    token = Token.create!(:user_id => id, :action => 'session')
+    token.value
+  end
+
+  # Returns true if token is a valid session token for the user whose id is user_id
+  def self.verify_session_token(user_id, token)
+    return false if user_id.blank? || token.blank?
+
+    scope = Token.where(:user_id => user_id, :value => token.to_s, :action => 'session')
+    if Setting.session_lifetime?
+      scope = scope.where("created_on > ?", Setting.session_lifetime.to_i.minutes.ago)
+    end
+    if Setting.session_timeout?
+      scope = scope.where("updated_on > ?", Setting.session_timeout.to_i.minutes.ago)
+    end
+    scope.update_all(:updated_on => Time.now) == 1
   end
 
   # Return an array of project ids for which the user has explicitly turned mail notifications on
@@ -764,8 +784,8 @@ class User < Principal
   # This helps to keep the account secure in case the associated email account
   # was compromised.
   def destroy_tokens
-    if hashed_password_changed?
-      tokens = ['recovery', 'autologin']
+    if hashed_password_changed? || (status_changed? && !active?)
+      tokens = ['recovery', 'autologin', 'session']
       Token.where(:user_id => id, :action => tokens).delete_all
     end
   end

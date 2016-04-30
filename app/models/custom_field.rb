@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,10 @@
 class CustomField < ActiveRecord::Base
   include Redmine::SubclassFactory
 
+  has_many :enumerations,
+           lambda { order(:position) },
+           :class_name => 'CustomFieldEnumeration',
+           :dependent => :delete_all
   has_many :custom_values, :dependent => :delete_all
   has_and_belongs_to_many :roles, :join_table => "#{table_name_prefix}custom_fields_roles#{table_name_suffix}", :foreign_key => "custom_field_id"
   acts_as_list :scope => 'type = \'#{self.class}\''
@@ -141,19 +145,16 @@ class CustomField < ActiveRecord::Base
   end
 
   def value_from_keyword(keyword, customized)
-    possible_values_options = possible_values_options(customized)
-    if possible_values_options.present?
-      keyword = keyword.to_s.downcase
-      if v = possible_values_options.detect {|text, id| text.downcase == keyword}
-        if v.is_a?(Array)
-          v.last
-        else
-          v
-        end
-      end
-    else
-      keyword
-    end
+    format.value_from_keyword(self, keyword, customized)
+  end
+
+  # Returns the options hash used to build a query filter for the field
+  def query_filter_options(query)
+    format.query_filter_options(self, query)
+  end
+
+  def totalable?
+    format.totalable_supported
   end
 
   # Returns a ORDER BY clause that can used to sort customized

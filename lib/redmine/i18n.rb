@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -49,11 +49,19 @@ module Redmine
     end
 
     def l_hours_short(hours)
-      "%.2f h" % hours.to_f
+      l(:label_f_hour_short, :value => ("%.2f" % hours.to_f))
     end
 
-    def ll(lang, str, value=nil)
-      ::I18n.t(str.to_s, :value => value, :locale => lang.to_s.gsub(%r{(.+)\-(.+)$}) { "#{$1}-#{$2.upcase}" })
+    def ll(lang, str, arg=nil)
+      options = arg.is_a?(Hash) ? arg : {:value => arg}
+      locale = lang.to_s.gsub(%r{(.+)\-(.+)$}) { "#{$1}-#{$2.upcase}" }
+      ::I18n.t(str.to_s, options.merge(:locale => locale))
+    end
+
+    # Localizes the given args with user's language
+    def lu(user, *args)
+      lang = user.try(:language).presence || Setting.default_language
+      ll(lang, *args) 
     end
 
     def format_date(date)

@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +26,9 @@ class SettingTest < ActiveSupport::TestCase
   end
 
   def test_read_default
+    Setting.delete_all
+    Setting.clear_cache
+
     assert_equal "Redmine", Setting.app_title
     assert Setting.self_registration?
     assert !Setting.login_required?

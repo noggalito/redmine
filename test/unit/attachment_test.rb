@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,6 +22,10 @@ require File.expand_path('../../test_helper', __FILE__)
 class AttachmentTest < ActiveSupport::TestCase
   fixtures :users, :projects, :roles, :members, :member_roles,
            :enabled_modules, :issues, :trackers, :attachments
+
+  # TODO: remove this with Rails 5 that supports after_commit callbacks
+  # in transactional fixtures (https://github.com/rails/rails/pull/18458)
+  self.use_transactional_fixtures = false
 
   class MockFile
     attr_reader :original_filename, :content_type, :content, :size
@@ -104,6 +108,56 @@ class AttachmentTest < ActiveSupport::TestCase
     with_settings :attachment_max_size => 0 do
       copy = a.copy
       assert copy.save
+    end
+  end
+
+  def test_filesize_greater_than_2gb_should_be_supported
+    with_settings :attachment_max_size => (50.gigabyte / 1024) do
+      a = Attachment.create!(:container => Issue.find(1),
+                             :file => uploaded_test_file("testfile.txt", "text/plain"),
+                             :author => User.find(1))
+      a.filesize = 20.gigabyte
+      a.save!
+      assert_equal 20.gigabyte, a.reload.filesize
+    end
+  end
+
+  def test_extension_should_be_validated_against_allowed_extensions
+    with_settings :attachment_extensions_allowed => "txt, png" do
+      a = Attachment.new(:container => Issue.find(1),
+                         :file => mock_file_with_options(:original_filename => "test.png"),
+                         :author => User.find(1))
+      assert_save a
+
+      a = Attachment.new(:container => Issue.find(1),
+                         :file => mock_file_with_options(:original_filename => "test.jpeg"),
+                         :author => User.find(1))
+      assert !a.save
+    end
+  end
+
+  def test_extension_should_be_validated_against_denied_extensions
+    with_settings :attachment_extensions_denied => "txt, png" do
+      a = Attachment.new(:container => Issue.find(1),
+                         :file => mock_file_with_options(:original_filename => "test.jpeg"),
+                         :author => User.find(1))
+      assert_save a
+
+      a = Attachment.new(:container => Issue.find(1),
+                         :file => mock_file_with_options(:original_filename => "test.png"),
+                         :author => User.find(1))
+      assert !a.save
+    end
+  end
+
+  def test_valid_extension_should_be_case_insensitive
+    with_settings :attachment_extensions_allowed => "txt, Png" do
+      assert Attachment.valid_extension?(".pnG")
+      assert !Attachment.valid_extension?(".jpeg")
+    end
+    with_settings :attachment_extensions_denied => "txt, Png" do
+      assert !Attachment.valid_extension?(".pnG")
+      assert Attachment.valid_extension?(".jpeg")
     end
   end
 
@@ -190,7 +244,7 @@ class AttachmentTest < ActiveSupport::TestCase
     assert_equal "test.png (Cool image)", a.title
   end
 
-  def test_new_attachment_should_be_editable_by_authot
+  def test_new_attachment_should_be_editable_by_author
     user = User.find(1)
     a = Attachment.new(:author => user)
     assert_equal true, a.editable?(user)
