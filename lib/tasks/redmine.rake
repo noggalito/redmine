@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -170,6 +170,13 @@ DESC
         t.libs << "test"
         t.verbose = true
         t.pattern = "plugins/#{ENV['NAME'] || '*'}/test/integration/**/*_test.rb"
+      end
+
+      desc 'Runs the plugins ui tests.'
+      Rake::TestTask.new :ui => "db:test:prepare" do |t|
+        t.libs << "test"
+        t.verbose = true
+        t.pattern = "plugins/#{ENV['NAME'] || '*'}/test/ui/**/*_test.rb"
       end
     end
   end

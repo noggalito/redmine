@@ -152,6 +152,7 @@ pt:
   general_csv_decimal_separator: ','
   general_csv_encoding: ISO-8859-15
   general_pdf_fontname: freesans
+  general_pdf_monospaced_fontname: freemono
   general_first_day_of_week: '1'
 
   notice_account_updated: A conta foi atualizada com sucesso.
@@ -437,10 +438,6 @@ pt:
   label_open_issues_plural: abertos
   label_closed_issues: fechado
   label_closed_issues_plural: fechados
-  label_x_open_issues_abbr_on_total:
-    zero:  0 abertas / %{total}
-    one:   1 aberta / %{total}
-    other: "%{count} abertas / %{total}"
   label_x_open_issues_abbr:
     zero:  0 abertas
     one:   1 aberta
@@ -568,10 +565,6 @@ pt:
   label_blocked_by: bloqueado por
   label_precedes: precede
   label_follows: segue
-  label_end_to_start: fim a início
-  label_end_to_end: fim a fim
-  label_start_to_start: início a início
-  label_start_to_end: início a fim
   label_stay_logged_in: Guardar sessão
   label_disabled: desativado
   label_show_completed_versions: Mostrar versões acabadas
@@ -1159,4 +1152,35 @@ pt:
   label_member_management_selected_roles_only: Apenas estas funções
   label_password_required: Confirme a sua palavra-chave para continuar
   label_total_spent_time: Total de tempo registado
+  notice_import_finished: Todos os %{count} registos foram importados.
+  notice_import_finished_with_errors: ! '%{count} de %{total} registos não poderam ser importados.'
+  error_invalid_file_encoding: 'O ficheiro não possui a codificação correcta: {encoding}'
+  error_invalid_csv_file_or_settings: O ficheiro não é um ficheiro CSV ou não respeita as definições abaixo
+  error_can_not_read_import_file: Ocorreu um erro ao ler o ficheiro a importar
+  permission_import_issues: Importar tarefas
+  label_import_issues: Importar tarefas
+  label_select_file_to_import: Selecione o ficheiro a importar
+  label_fields_separator: Separador de campos
+  label_fields_wrapper: Field wrapper
+  label_encoding: Codificação
+  label_comma_char: Vírgula
+  label_semi_colon_char: Ponto e vírgula
+  label_quote_char: Aspas
+  label_double_quote_char: Aspas duplas
+  label_fields_mapping: Mapeamento de campos
+  label_file_content_preview: Pré-visualização do conteúdo do ficheiro
+  label_create_missing_values: Criar os valores em falta
+  button_import: Importar
   field_total_estimated_hours: Total de tempo estimado
+  label_api: API
+  label_total_plural: Totals
+  label_assigned_issues: Assigned issues
+  label_field_format_enumeration: Key/value list
+  label_f_hour_short: '%{value} h'
+  field_default_version: Default version
+  error_attachment_extension_not_allowed: Attachment extension %{extension} is not allowed
+  setting_attachment_extensions_allowed: Allowed extensions
+  setting_attachment_extensions_denied: Disallowed extensions
+  label_any_open_issues: any open issues
+  label_no_open_issues: no open issues
+  label_default_values_for_new_users: Default values for new users

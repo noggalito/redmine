@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -41,6 +41,26 @@ module Redmine
           end
         else
           false
+        end
+      end
+
+      # Returns true if the database is MySQL
+      def mysql?
+        (ActiveRecord::Base.connection.adapter_name =~ /mysql/i).present?
+      end
+
+      # Returns a SQL statement for case/accent (if possible) insensitive match
+      def like(left, right, options={})
+        neg = (options[:match] == false ? 'NOT ' : '')
+
+        if postgresql?
+          if postgresql_unaccent?
+            "unaccent(#{left}) #{neg}ILIKE unaccent(#{right})"
+          else
+            "#{left} #{neg}ILIKE #{right}"
+          end
+        else
+          "#{left} #{neg}LIKE #{right}"
         end
       end
 

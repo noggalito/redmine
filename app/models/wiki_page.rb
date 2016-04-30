@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,6 +23,8 @@ class WikiPage < ActiveRecord::Base
 
   belongs_to :wiki
   has_one :content, :class_name => 'WikiContent', :foreign_key => 'page_id', :dependent => :destroy
+  has_one :content_without_text, lambda {without_text.readonly}, :class_name => 'WikiContent', :foreign_key => 'page_id'
+
   acts_as_attachable :delete_permission => :delete_wiki_pages_attachments
   acts_as_tree :dependent => :nullify, :order => 'title'
 
@@ -52,10 +54,7 @@ class WikiPage < ActiveRecord::Base
   after_save :handle_children_move
 
   # eager load information about last updates, without loading text
-  scope :with_updated_on, lambda {
-    select("#{WikiPage.table_name}.*, #{WikiContent.table_name}.updated_on, #{WikiContent.table_name}.version").
-      joins("LEFT JOIN #{WikiContent.table_name} ON #{WikiContent.table_name}.page_id = #{WikiPage.table_name}.id")
-  }
+  scope :with_updated_on, lambda { preload(:content_without_text) }
 
   # Wiki pages that are protected by default
   DEFAULT_PROTECTED_PAGES = %w(sidebar)
@@ -127,7 +126,7 @@ class WikiPage < ActiveRecord::Base
         child.wiki_id = wiki_id
         child.redirect_existing_links = redirect_existing_links
         unless child.save
-          WikiPage.where(:id => child.id).update_all :parent_nil => nil
+          WikiPage.where(:id => child.id).update_all :parent_id => nil
         end
       end
     end
@@ -183,18 +182,11 @@ class WikiPage < ActiveRecord::Base
   end
 
   def updated_on
-    unless @updated_on
-      if time = read_attribute(:updated_on)
-        # content updated_on was eager loaded with the page
-        begin
-          @updated_on = (self.class.default_timezone == :utc ? Time.parse(time.to_s).utc : Time.parse(time.to_s).localtime)
-        rescue
-        end
-      else
-        @updated_on = content && content.updated_on
-      end
-    end
-    @updated_on
+    content_attribute(:updated_on)
+  end
+
+  def version
+    content_attribute(:version)
   end
 
   # Returns true if usr is allowed to edit the page, otherwise false
@@ -243,6 +235,12 @@ class WikiPage < ActiveRecord::Base
     if parent_id_changed? && parent && (parent.wiki_id != wiki_id)
       errors.add(:parent_title, :not_same_project)
     end
+  end
+
+  private
+
+  def content_attribute(name)
+    (association(:content).loaded? ? content : content_without_text).try(name)
   end
 end
 

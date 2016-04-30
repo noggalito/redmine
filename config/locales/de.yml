@@ -395,6 +395,7 @@ de:
   general_csv_encoding: ISO-8859-1
   general_csv_separator: ';'
   general_pdf_fontname: freesans
+  general_pdf_monospaced_fontname: freemono
   general_first_day_of_week: '1'
   general_lang_name: 'German (Deutsch)'
   general_text_No: 'Nein'
@@ -526,8 +527,6 @@ de:
   label_duplicated_by: Dupliziert durch
   label_duplicates: Duplikat von
   label_edit_attachments: Angehängte Dateien bearbeiten
-  label_end_to_end: Ende - Ende
-  label_end_to_start: Ende - Anfang
   label_enumeration_new: Neuer Wert
   label_enumerations: Aufzählungen
   label_environment: Umgebung
@@ -746,8 +745,6 @@ de:
   label_sort_lower: Eins tiefer
   label_sort_lowest: Ans Ende
   label_spent_time: Aufgewendete Zeit
-  label_start_to_end: Anfang - Ende
-  label_start_to_start: Anfang - Anfang
   label_statistics: Statistiken
   label_status_transitions: Statusänderungen
   label_stay_logged_in: Angemeldet bleiben
@@ -830,10 +827,6 @@ de:
     zero:  0 offen
     one:   1 offen
     other: "%{count} offen"
-  label_x_open_issues_abbr_on_total:
-    zero:  0 offen / %{total}
-    one:   1 offen / %{total}
-    other: "%{count} offen / %{total}"
   label_x_projects:
     zero:  keine Projekte
     one:   1 Projekt
@@ -1152,16 +1145,47 @@ de:
   setting_search_results_per_page: Suchergebnisse pro Seite
   label_blank_value: leer
   permission_copy_issues: Tickets kopieren
-  error_password_expired: Your password has expired or the administrator requires you
-    to change it.
-  field_time_entries_visibility: Time logs visibility
-  label_parent_task_attributes: Parent tasks attributes
-  label_parent_task_attributes_derived: Calculated from subtasks
-  label_parent_task_attributes_independent: Independent of subtasks
-  label_time_entries_visibility_all: All time entries
-  label_time_entries_visibility_own: Time entries created by the user
-  label_member_management: Member management
-  label_member_management_all_roles: All roles
-  label_member_management_selected_roles_only: Only these roles
+  error_password_expired: Ihr Passwort ist abgelaufen oder der Administrator verlangt eine Passwortänderung.
+  field_time_entries_visibility: Zeiten-Sichtbarkeit
+  label_parent_task_attributes: Eigenschaften übergeordneter Aufgaben
+  label_parent_task_attributes_derived: Abgeleitet von Unteraufgaben
+  label_parent_task_attributes_independent: Unabhängig von Unteraufgaben
+  label_time_entries_visibility_all: Alle Zeitaufwände
+  label_time_entries_visibility_own: Nur eigene Aufwände
+  label_member_management: Mitglieder verwalten
+  label_member_management_all_roles: Alle Rollen
+  label_member_management_selected_roles_only: Nur diese Rollen
   label_total_spent_time: Aufgewendete Zeit aller Projekte anzeigen
-  field_total_estimated_hours: Total estimated time
+  notice_import_finished: Alle %{count} Einträge wurden importiert.
+  notice_import_finished_with_errors: ! '%{count} von %{total} Einträgen konnten nicht
+    importiert werden.'
+  error_invalid_file_encoding: Die Datei ist keine gültige %{encoding} kodierte Datei
+  error_invalid_csv_file_or_settings: Die Dartei ist keine CSV-Datei oder entspricht nicht den Einstellungen unten
+  error_can_not_read_import_file: Beim Einlesen der Datei ist ein Fehler aufgetreten
+  permission_import_issues: Tickets importieren
+  label_import_issues: Tickets importieren
+  label_select_file_to_import: Bitte wählen Sie eine Datei für den Import aus
+  label_fields_separator: Trennzeichen
+  label_fields_wrapper: Textqualifizierer
+  label_encoding: Kodierung
+  label_comma_char: Komma
+  label_semi_colon_char: Semikolon
+  label_quote_char: Anführungszeichen
+  label_double_quote_char: Doppelte Anführungszeichen
+  label_fields_mapping: Zuordnung der Felder
+  label_file_content_preview: Inhaltsvorschau
+  label_create_missing_values: Ergänze fehlende Werte
+  button_import: Importieren
+  field_total_estimated_hours: Summe des geschätzten Aufwands
+  label_api: API
+  label_total_plural: Summe
+  label_assigned_issues: Zugewiesene Tickets
+  label_field_format_enumeration: Eigenschaft/Wert-Paare
+  label_f_hour_short: '%{value} h'
+  field_default_version: Standard-Version
+  error_attachment_extension_not_allowed: Attachment Erweiterung %{extension} ist nicht zugelassen
+  setting_attachment_extensions_allowed: Zugelassene Erweiterungen
+  setting_attachment_extensions_denied: Nicht zugelassene Erweiterungen
+  label_any_open_issues: irgendein offenes Ticket
+  label_no_open_issues: kein offenes Ticket
+  label_default_values_for_new_users: Standardwerte für neue Benutzer

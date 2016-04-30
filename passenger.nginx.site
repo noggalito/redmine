@@ -1,6 +1,9 @@
 server {
   listen 80 default_server;
-  server_name nodriza.shiriculapo.com www.nodriza.shiriculapo.com;
+  server_name nodriza.shiriculapo.com
+              www.nodriza.shiriculapo.com
+              nodriza.noggalito.com
+              www.nodriza.noggalito.com;
   passenger_enabled on;
   passenger_app_env production;
   root /home/macool/redmine-3.1/public;

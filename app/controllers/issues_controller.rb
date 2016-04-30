@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -79,7 +79,7 @@ class IssuesController < ApplicationController
           Issue.load_visible_relations(@issues) if include_in_api_response?('relations')
         }
         format.atom { render_feed(@issues, :title => "#{@project || Setting.app_title}: #{l(:label_issue_plural)}") }
-        format.csv  { send_data(query_to_csv(@issues, @query, params), :type => 'text/csv; header=present', :filename => 'issues.csv') }
+        format.csv  { send_data(query_to_csv(@issues, @query, params[:csv]), :type => 'text/csv; header=present', :filename => 'issues.csv') }
         format.pdf  { send_file_headers! :type => 'application/pdf', :filename => 'issues.pdf' }
       end
     else
@@ -376,7 +376,7 @@ class IssuesController < ApplicationController
   def update_issue_from_params
     @time_entry = TimeEntry.new(:issue => @issue, :project => @issue.project)
     if params[:time_entry]
-      @time_entry.attributes = params[:time_entry]
+      @time_entry.safe_attributes = params[:time_entry]
     end
 
     @issue.init_journal(User.current)
@@ -388,7 +388,7 @@ class IssuesController < ApplicationController
         issue_attributes = issue_attributes.dup
         issue_attributes.delete(:lock_version)
       when 'add_notes'
-        issue_attributes = issue_attributes.slice(:notes)
+        issue_attributes = issue_attributes.slice(:notes, :private_notes)
       when 'cancel'
         redirect_to issue_path(@issue)
         return false
@@ -427,12 +427,17 @@ class IssuesController < ApplicationController
     @issue.author ||= User.current
     @issue.start_date ||= Date.today if Setting.default_issue_start_date_to_creation_date?
 
-    if attrs = params[:issue].deep_dup
-      if action_name == 'new' && params[:was_default_status] == attrs[:status_id]
-        attrs.delete(:status_id)
-      end
-      @issue.safe_attributes = attrs
+    attrs = (params[:issue] || {}).deep_dup
+    if action_name == 'new' && params[:was_default_status] == attrs[:status_id]
+      attrs.delete(:status_id)
     end
+    if action_name == 'new' && params[:form_update_triggered_by] == 'issue_project_id'
+      # Discard submitted version when changing the project on the issue form
+      # so we can use the default version for the new project
+      attrs.delete(:fixed_version_id)
+    end
+    @issue.safe_attributes = attrs
+
     if @issue.project
       @issue.tracker ||= @issue.project.trackers.first
       if @issue.tracker.nil?
@@ -446,7 +451,7 @@ class IssuesController < ApplicationController
     end
 
     @priorities = IssuePriority.active
-    @allowed_statuses = @issue.new_statuses_allowed_to(User.current, @issue.new_record?)
+    @allowed_statuses = @issue.new_statuses_allowed_to(User.current)
   end
 
   def parse_params_for_bulk_issue_attributes(params)

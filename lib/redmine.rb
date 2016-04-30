@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -36,7 +36,6 @@ require 'redmine/activity/fetcher'
 require 'redmine/ciphering'
 require 'redmine/codeset_util'
 require 'redmine/field_format'
-require 'redmine/i18n'
 require 'redmine/menu_manager'
 require 'redmine/notifiable'
 require 'redmine/platform'
@@ -61,6 +60,8 @@ require 'redmine/views/builders'
 
 require 'redmine/themes'
 require 'redmine/hook'
+require 'redmine/hook/listener'
+require 'redmine/hook/view_listener'
 require 'redmine/plugin'
 
 Redmine::Scm::Base.add "Subversion"
@@ -116,6 +117,7 @@ Redmine::AccessControl.map do |map|
     map.permission :view_issue_watchers, {}, :read => true
     map.permission :add_issue_watchers, {:watchers => [:new, :create, :append, :autocomplete_for_user]}
     map.permission :delete_issue_watchers, {:watchers => :destroy}
+    map.permission :import_issues, {:imports => [:new, :create, :settings, :mapping, :run, :show]}
   end
 
   map.project_module :time_tracking do |map|

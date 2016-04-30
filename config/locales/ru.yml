@@ -395,6 +395,7 @@ ru:
   general_csv_encoding: UTF-8
   general_csv_separator: ';'
   general_pdf_fontname: freesans
+  general_pdf_monospaced_fontname: freemono
   general_first_day_of_week: '1'
   general_lang_name: 'Russian (Русский)'
   general_text_no: 'нет'
@@ -491,8 +492,6 @@ ru:
   label_downloads_abbr: Скачиваний
   label_duplicated_by: дублируется
   label_duplicates: дублирует
-  label_end_to_end: с конца к концу
-  label_end_to_start: с конца к началу
   label_enumeration_new: Новое значение
   label_enumerations: Списки значений
   label_environment: Окружение
@@ -669,8 +668,6 @@ ru:
   label_sort_lower: Вниз
   label_sort_lowest: В конец
   label_spent_time: Трудозатраты
-  label_start_to_end: с начала к концу
-  label_start_to_start: с начала к началу
   label_statistics: Статистика
   label_stay_logged_in: Оставаться в системе
   label_string: Текст
@@ -733,12 +730,6 @@ ru:
     few:   "%{count} открыто"
     many:  "%{count} открыто"
     other: "%{count} открыто"
-  label_x_open_issues_abbr_on_total:
-    zero:  "0 открыто / %{total}"
-    one:   "%{count} открыта / %{total}"
-    few:   "%{count} открыто / %{total}"
-    many:  "%{count} открыто / %{total}"
-    other: "%{count} открыто / %{total}"
   label_x_projects:
     zero:  "нет проектов"
     one:   "%{count} проект"
@@ -1260,4 +1251,35 @@ ru:
   label_member_management_selected_roles_only: Только эти роли
   label_password_required: Для продолжения введите свой пароль
   label_total_spent_time: Всего затрачено времени
-  field_total_estimated_hours: Total estimated time
+  notice_import_finished: Все %{count} элемент(а, ов) были импортированы.
+  notice_import_finished_with_errors: ! '%{count} из %{total} элемент(а, ов) не могут быть импортированы.'
+  error_invalid_file_encoding: Кодировка файла не соответствует выбранной %{encoding}
+  error_invalid_csv_file_or_settings: Файл не является файлом CSV или не соответствует представленным настройкам
+  error_can_not_read_import_file: Во время чтения файла для импорта произошла ошибка
+  permission_import_issues: Импорт задач
+  label_import_issues: Импорт задач
+  label_select_file_to_import: Выберите файл для импорта
+  label_fields_separator: Разделитель
+  label_fields_wrapper: Ограничитель
+  label_encoding: Кодировка
+  label_comma_char: Запятая
+  label_semi_colon_char: Точка с запятой
+  label_quote_char: Кавычки
+  label_double_quote_char: Двойные кавычки
+  label_fields_mapping: Соответствие полей
+  label_file_content_preview: Предпросмотр содержимого файла
+  label_create_missing_values: Создать недостающие значения
+  button_import: Импорт
+  field_total_estimated_hours: Всего осталось времени
+  label_api: API
+  label_total_plural: Итоги
+  label_assigned_issues: Назначенные задачи
+  label_field_format_enumeration: Список ключ/значение
+  label_f_hour_short: '%{value} ч'
+  field_default_version: Версия по умолчанию
+  error_attachment_extension_not_allowed: Расширение %{extension} запрещено
+  setting_attachment_extensions_allowed: Допустимые расширения
+  setting_attachment_extensions_denied: Запрещённые расширения
+  label_any_open_issues: любые открытые задачи
+  label_no_open_issues: нет открытых задач
+  label_default_values_for_new_users: Default values for new users

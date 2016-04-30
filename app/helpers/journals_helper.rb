@@ -1,7 +1,7 @@
 # encoding: utf-8
 #
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +18,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module JournalsHelper
+
+  # Returns the attachments of a journal that are displayed as thumbnails
+  def journal_thumbnail_attachments(journal)
+    ids = journal.details.select {|d| d.property == 'attachment' && d.value.present?}.map(&:prop_key)
+    ids.any? ? Attachment.where(:id => ids).select(&:thumbnailable?) : []
+  end
+
   def render_notes(issue, journal, options={})
     content = ''
     editable = User.current.logged? && (User.current.allowed_to?(:edit_issue_notes, issue.project) || (journal.user == User.current && User.current.allowed_to?(:edit_own_issue_notes, issue.project)))

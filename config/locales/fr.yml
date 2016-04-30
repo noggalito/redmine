@@ -162,6 +162,7 @@ fr:
   general_csv_decimal_separator: ','
   general_csv_encoding: ISO-8859-1
   general_pdf_fontname: freesans
+  general_pdf_monospaced_fontname: freemono
   general_first_day_of_week: '1'
 
   notice_account_updated: Le compte a été mis à jour avec succès.
@@ -202,6 +203,8 @@ fr:
   notice_account_deleted: "Votre compte a été définitivement supprimé."
   notice_user_successful_create: "Utilisateur %{id} créé."
   notice_new_password_must_be_different: Votre nouveau mot de passe doit être différent de votre mot de passe actuel
+  notice_import_finished: "Les %{count} éléments ont été importé(s)."
+  notice_import_finished_with_errors: "%{count} élément(s) sur %{total} n'ont pas pu être importé(s)."
 
   error_can_t_load_default_data: "Une erreur s'est produite lors du chargement du paramétrage : %{value}"
   error_scm_not_found: "L'entrée et/ou la révision demandée n'existe pas dans le dépôt."
@@ -225,6 +228,10 @@ fr:
   error_session_expired: "Votre session a expiré. Veuillez vous reconnecter."
   warning_attachments_not_saved: "%{count} fichier(s) n'ont pas pu être sauvegardés."
   error_password_expired: "Votre mot de passe a expiré ou nécessite d'être changé."
+  error_invalid_file_encoding: "Le fichier n'est pas un fichier %{encoding} valide"
+  error_invalid_csv_file_or_settings: "Le fichier n'est pas un fichier CSV ou n'est pas conforme aux paramètres sélectionnés"
+  error_can_not_read_import_file: "Une erreur est survenue lors de la lecture du fichier à importer"
+  error_attachment_extension_not_allowed: "L'extension %{extension} n'est pas autorisée"
 
   mail_subject_lost_password: "Votre mot de passe %{value}"
   mail_body_lost_password: 'Pour changer votre mot de passe, cliquez sur le lien suivant :'
@@ -363,6 +370,7 @@ fr:
   field_users_visibility: Visibilité des utilisateurs
   field_time_entries_visibility: Visibilité du temps passé
   field_total_estimated_hours: Temps estimé total
+  field_default_version: Version par défaut
 
   setting_app_title: Titre de l'application
   setting_app_subtitle: Sous-titre de l'application
@@ -440,6 +448,8 @@ fr:
   setting_link_copied_issue: Lier les demandes lors de la copie
   setting_max_additional_emails: Nombre maximal d'adresses email additionnelles
   setting_search_results_per_page: Résultats de recherche affichés par page
+  setting_attachment_extensions_allowed: Extensions autorisées
+  setting_attachment_extensions_denied: Extensions non autorisées
 
   permission_add_project: Créer un projet
   permission_add_subprojects: Créer des sous-projets
@@ -505,6 +515,7 @@ fr:
   permission_export_wiki_pages: Exporter les pages
   permission_manage_subtasks: Gérer les sous-tâches
   permission_manage_related_issues: Gérer les demandes associées
+  permission_import_issues: Importer des demandes
 
   project_module_issue_tracking: Suivi des demandes
   project_module_time_tracking: Suivi du temps passé
@@ -586,6 +597,7 @@ fr:
   label_logout: Déconnexion
   label_help: Aide
   label_reported_issues: Demandes soumises
+  label_assigned_issues: Demandes assignées
   label_assigned_to_me_issues: Demandes qui me sont assignées
   label_last_login: Dernière connexion
   label_registered_on: Inscrit le
@@ -643,10 +655,6 @@ fr:
   label_open_issues_plural: ouverts
   label_closed_issues: fermé
   label_closed_issues_plural: fermés
-  label_x_open_issues_abbr_on_total:
-    zero:  0 ouverte sur %{total}
-    one:   1 ouverte sur %{total}
-    other: "%{count} ouvertes sur %{total}"
   label_x_open_issues_abbr:
     zero:  0 ouverte
     one:   1 ouverte
@@ -660,6 +668,7 @@ fr:
     one:   1 demande
     other: "%{count} demandes"
   label_total: Total
+  label_total_plural: Totaux
   label_total_time: Temps total
   label_permissions: Permissions
   label_current_status: Statut actuel
@@ -724,6 +733,8 @@ fr:
   label_any_issues_in_project: une demande du projet
   label_any_issues_not_in_project: une demande hors du projet
   label_no_issues_in_project: aucune demande du projet
+  label_any_open_issues: une demande ouverte
+  label_no_open_issues: aucune demande ouverte
   label_day_plural: jours
   label_repository: Dépôt
   label_repository_new: Nouveau dépôt
@@ -773,6 +784,7 @@ fr:
   label_overall_spent_time: Temps passé global
   label_f_hour: "%{value} heure"
   label_f_hour_plural: "%{value} heures"
+  label_f_hour_short: "%{value} h"
   label_time_tracking: Suivi du temps
   label_change_plural: Changements
   label_statistics: Statistiques
@@ -800,10 +812,6 @@ fr:
   label_follows: Suit
   label_copied_to: Copié vers
   label_copied_from: Copié depuis
-  label_end_to_start: fin à début
-  label_end_to_end: fin à fin
-  label_start_to_start: début à début
-  label_start_to_end: début à fin
   label_stay_logged_in: Rester connecté
   label_disabled: désactivé
   label_show_completed_versions: Voir les versions passées
@@ -971,6 +979,21 @@ fr:
   label_member_management: Gestion des membres
   label_member_management_all_roles: Tous les rôles
   label_member_management_selected_roles_only: Ces rôles uniquement
+  label_import_issues: Importer des demandes
+  label_select_file_to_import: Sélectionner le fichier à importer
+  label_fields_separator: Séparateur de champs
+  label_fields_wrapper: Délimiteur de texte
+  label_encoding: Encodage
+  label_comma_char: Virgule
+  label_semi_colon_char: Point virgule
+  label_quote_char: Apostrophe
+  label_double_quote_char: Double apostrophe
+  label_fields_mapping: Correspondance des champs
+  label_file_content_preview: Aperçu du contenu du fichier
+  label_create_missing_values: Créer les valeurs manquantes
+  label_api: API
+  label_field_format_enumeration: Liste clé/valeur
+  label_default_values_for_new_users: Valeurs par défaut pour les nouveaux utilisateurs
 
   button_login: Connexion
   button_submit: Soumettre
@@ -1024,6 +1047,7 @@ fr:
   button_delete_my_account: Supprimer mon compte
   button_close: Fermer
   button_reopen: Réouvrir
+  button_import: Importer
 
   status_active: actif
   status_registered: enregistré
@@ -1088,7 +1112,7 @@ fr:
   text_assign_time_entries_to_project: Reporter les heures sur le projet
   text_reassign_time_entries: 'Reporter les heures sur cette demande:'
   text_user_wrote: "%{value} a écrit :"
-  text_enumeration_destroy_question: "Cette valeur est affectée à %{count} objets."
+  text_enumeration_destroy_question: "La valeur « %{name} » est affectée à %{count} objet(s)."
   text_enumeration_category_reassign_to: 'Réaffecter les objets à cette valeur:'
   text_email_delivery_not_configured: "L'envoi de mail n'est pas configuré, les notifications sont désactivées.\nConfigurez votre serveur SMTP dans config/configuration.yml et redémarrez l'application pour les activer."
   text_repository_usernames_mapping: "Vous pouvez sélectionner ou modifier l'utilisateur Redmine associé à chaque nom d'utilisateur figurant dans l'historique du dépôt.\nLes utilisateurs avec le même identifiant ou la même adresse mail seront automatiquement associés."

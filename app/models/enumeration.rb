@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@ class Enumeration < ActiveRecord::Base
 
   belongs_to :project
 
-  acts_as_list :scope => 'type = \'#{type}\''
+  acts_as_list :scope => 'type = \'#{type}\' AND #{parent_id ? "parent_id = #{parent_id}" : "parent_id IS NULL"}'
   acts_as_customizable
   acts_as_tree
 
@@ -129,11 +129,37 @@ class Enumeration < ActiveRecord::Base
     return new == previous
   end
 
+  # Overrides acts_as_list reset_positions_in_list so that enumeration overrides
+  # get the same position as the overriden enumeration
+  def reset_positions_in_list
+    acts_as_list_class.where(scope_condition).reorder("#{position_column} ASC, id ASC").each_with_index do |item, i|
+      acts_as_list_class.where("id = :id OR parent_id = :id", :id => item.id).
+        update_all({position_column => (i + 1)})
+    end
+  end
+
 private
   def check_integrity
     raise "Cannot delete enumeration" if self.in_use?
   end
 
+  # Overrides acts_as_list add_to_list_bottom so that enumeration overrides
+  # get the same position as the overriden enumeration
+  def add_to_list_bottom
+    if parent
+      self[position_column] = parent.position
+    else
+      super
+    end
+  end
+
+  # Overrides acts_as_list remove_from_list so that enumeration overrides
+  # get the same position as the overriden enumeration
+  def remove_from_list
+    if parent_id.blank?
+      super
+    end
+  end
 end
 
 # Force load the subclasses in development mode

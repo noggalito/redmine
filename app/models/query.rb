@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class QueryColumn
-  attr_accessor :name, :sortable, :groupable, :default_order
+  attr_accessor :name, :sortable, :groupable, :totalable, :default_order
   include Redmine::I18n
 
   def initialize(name, options={})
@@ -26,6 +26,7 @@ class QueryColumn
     if groupable == true
       self.groupable = name.to_s
     end
+    self.totalable = options[:totalable] || false
     self.default_order = options[:default_order]
     @inline = options.key?(:inline) ? options[:inline] : true
     @caption_key = options[:caption] || "field_#{name}".to_sym
@@ -79,6 +80,7 @@ class QueryCustomFieldColumn < QueryColumn
     self.name = "cf_#{custom_field.id}".to_sym
     self.sortable = custom_field.order_statement || false
     self.groupable = custom_field.group_statement || false
+    self.totalable = custom_field.totalable?
     @inline = true
     @cf = custom_field
   end
@@ -201,7 +203,9 @@ class Query < ActiveRecord::Base
     "!~"  => :label_not_contains,
     "=p"  => :label_any_issues_in_project,
     "=!p" => :label_any_issues_not_in_project,
-    "!p"  => :label_no_issues_in_project
+    "!p"  => :label_no_issues_in_project,
+    "*o"  => :label_any_open_issues,
+    "!o"  => :label_no_open_issues
   }
 
   class_attribute :operators_by_filter_type
@@ -216,7 +220,7 @@ class Query < ActiveRecord::Base
     :text => [  "~", "!~", "!*", "*" ],
     :integer => [ "=", ">=", "<=", "><", "!*", "*" ],
     :float => [ "=", ">=", "<=", "><", "!*", "*" ],
-    :relation => ["=", "=p", "=!p", "!p", "!*", "*"],
+    :relation => ["=", "=p", "=!p", "!p", "*o", "!o", "!*", "*"],
     :tree => ["=", "~", "!*", "*"]
   }
 
@@ -246,6 +250,7 @@ class Query < ActiveRecord::Base
     end
     self.group_by = params[:group_by] || (params[:query] && params[:query][:group_by])
     self.column_names = params[:c] || (params[:query] && params[:query][:column_names])
+    self.totalable_names = params[:t] || (params[:query] && params[:query][:totalable_names])
     self
   end
 
@@ -278,7 +283,7 @@ class Query < ActiveRecord::Base
           # filter requires one or more values
           (values_for(field) and !values_for(field).first.blank?) or
           # filter doesn't require any value
-          ["o", "c", "!*", "*", "t", "ld", "w", "lw", "l2w", "m", "lm", "y"].include? operator_for(field)
+          ["o", "c", "!*", "*", "t", "ld", "w", "lw", "l2w", "m", "lm", "y", "*o", "!o"].include? operator_for(field)
     end if filters
   end
 
@@ -308,7 +313,14 @@ class Query < ActiveRecord::Base
   def available_filters_as_json
     json = {}
     available_filters.each do |field, options|
-      json[field] = options.slice(:type, :name, :values).stringify_keys
+      options = options.slice(:type, :name, :values)
+      if options[:values] && values_for(field)
+        missing = Array(values_for(field)).select(&:present?) - options[:values].map(&:last)
+        if missing.any? && respond_to?(method = "find_#{field}_filter_values")
+          options[:values] += send(method, missing)
+        end
+      end
+      json[field] = options.stringify_keys
     end
     json
   end
@@ -454,6 +466,10 @@ class Query < ActiveRecord::Base
     available_columns.reject(&:inline?)
   end
 
+  def available_totalable_columns
+    available_columns.select(&:totalable)
+  end
+
   def default_columns_names
     []
   end
@@ -480,6 +496,22 @@ class Query < ActiveRecord::Base
 
   def has_default_columns?
     column_names.nil? || column_names.empty?
+  end
+
+  def totalable_columns
+    names = totalable_names
+    available_totalable_columns.select {|column| names.include?(column.name)}
+  end
+
+  def totalable_names=(names)
+    if names
+      names = names.select(&:present?).map {|n| n.is_a?(Symbol) ? n : n.to_sym}
+    end
+    options[:totalable_names] = names
+  end
+
+  def totalable_names
+    options[:totalable_names] || Setting.issue_list_default_totals.map(&:to_sym) || []
   end
 
   def sort_criteria=(arg)
@@ -607,7 +639,91 @@ class Query < ActiveRecord::Base
     filters_clauses.any? ? filters_clauses.join(' AND ') : nil
   end
 
+  # Returns the sum of values for the given column
+  def total_for(column)
+    total_with_scope(column, base_scope)
+  end
+
+  # Returns a hash of the sum of the given column for each group,
+  # or nil if the query is not grouped
+  def total_by_group_for(column)
+    grouped_query do |scope|
+      total_with_scope(column, scope)
+    end
+  end
+
+  def totals
+    totals = totalable_columns.map {|column| [column, total_for(column)]}
+    yield totals if block_given?
+    totals
+  end
+
+  def totals_by_group
+    totals = totalable_columns.map {|column| [column, total_by_group_for(column)]}
+    yield totals if block_given?
+    totals
+  end
+
   private
+
+  def grouped_query(&block)
+    r = nil
+    if grouped?
+      begin
+        # Rails3 will raise an (unexpected) RecordNotFound if there's only a nil group value
+        r = yield base_group_scope
+      rescue ActiveRecord::RecordNotFound
+        r = {nil => yield(base_scope)}
+      end
+      c = group_by_column
+      if c.is_a?(QueryCustomFieldColumn)
+        r = r.keys.inject({}) {|h, k| h[c.custom_field.cast_value(k)] = r[k]; h}
+      end
+    end
+    r
+  rescue ::ActiveRecord::StatementInvalid => e
+    raise StatementInvalid.new(e.message)
+  end
+
+  def total_with_scope(column, scope)
+    unless column.is_a?(QueryColumn)
+      column = column.to_sym
+      column = available_totalable_columns.detect {|c| c.name == column}
+    end
+    if column.is_a?(QueryCustomFieldColumn)
+      custom_field = column.custom_field
+      send "total_for_custom_field", custom_field, scope
+    else
+      send "total_for_#{column.name}", scope
+    end
+  rescue ::ActiveRecord::StatementInvalid => e
+    raise StatementInvalid.new(e.message)
+  end
+
+  def base_scope
+    raise "unimplemented"
+  end
+
+  def base_group_scope
+    base_scope.
+      joins(joins_for_order_statement(group_by_statement)).
+      group(group_by_statement)
+  end
+
+  def total_for_custom_field(custom_field, scope, &block)
+    total = custom_field.format.total_for_scope(custom_field, scope)
+    total = map_total(total) {|t| custom_field.format.cast_total_value(custom_field, t)}
+    total
+  end
+
+  def map_total(total, &block)
+    if total.is_a?(Hash)
+      total.keys.each {|k| total[k] = yield total[k]}
+    else
+      total = yield total
+    end
+    total
+  end
 
   def sql_for_custom_field(field, operator, value, custom_field_id)
     db_table = CustomValue.table_name
@@ -779,9 +895,9 @@ class Query < ActiveRecord::Base
       date = Date.today
       sql = date_clause(db_table, db_field, date.beginning_of_year, date.end_of_year, is_custom_filter)
     when "~"
-      sql = "LOWER(#{db_table}.#{db_field}) LIKE '%#{self.class.connection.quote_string(value.first.to_s.downcase)}%'"
+      sql = sql_contains("#{db_table}.#{db_field}", value.first)
     when "!~"
-      sql = "LOWER(#{db_table}.#{db_field}) NOT LIKE '%#{self.class.connection.quote_string(value.first.to_s.downcase)}%'"
+      sql = sql_contains("#{db_table}.#{db_field}", value.first, false)
     else
       raise "Unknown query operator #{operator}"
     end
@@ -789,9 +905,15 @@ class Query < ActiveRecord::Base
     return sql
   end
 
+  # Returns a SQL LIKE statement with wildcards
+  def sql_contains(db_field, value, match=true)
+    value = "'%#{self.class.connection.quote_string(value.to_s)}%'"
+    Redmine::Database.like(db_field, value, :match => match)
+  end
+
   # Adds a filter for the given custom field
   def add_custom_field_filter(field, assoc=nil)
-    options = field.format.query_filter_options(field, self)
+    options = field.query_filter_options(self)
     if field.format.target_class && field.format.target_class <= User
       if options[:values].is_a?(Array) && User.current.logged?
         options[:values].unshift ["<< #{l(:label_me)} >>", "me"]

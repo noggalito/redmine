@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,12 +22,14 @@ class WikiContent < ActiveRecord::Base
   belongs_to :page, :class_name => 'WikiPage'
   belongs_to :author, :class_name => 'User'
   validates_presence_of :text
-  validates_length_of :comments, :maximum => 255, :allow_nil => true
+  validates_length_of :comments, :maximum => 1024, :allow_nil => true
   attr_protected :id
 
   acts_as_versioned
 
   after_save :send_notification
+
+  scope :without_text, lambda {select(:id, :page_id, :version, :updated_on)}
 
   def visible?(user=User.current)
     page.visible?(user)

@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +26,16 @@ class TimeEntryQueryTest < ActiveSupport::TestCase
            :issue_categories, :enumerations,
            :groups_users,
            :enabled_modules
+
+  def test_cross_project_activity_filter_should_propose_non_active_activities
+    activity = TimeEntryActivity.create!(:name => 'Disabled', :active => false)
+    assert !activity.active?
+
+    query = TimeEntryQuery.new(:name => '_')
+    assert options = query.available_filters['activity_id']
+    assert values = options[:values]
+    assert_include ["Disabled", activity.id.to_s], values
+  end
 
   def test_activity_filter_should_consider_system_and_project_activities
     TimeEntry.delete_all

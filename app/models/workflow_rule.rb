@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ class WorkflowRule < ActiveRecord::Base
   belongs_to :old_status, :class_name => 'IssueStatus'
   belongs_to :new_status, :class_name => 'IssueStatus'
 
-  validates_presence_of :role, :tracker, :old_status
+  validates_presence_of :role, :tracker
   attr_protected :id
 
   # Copies workflows from source to targets

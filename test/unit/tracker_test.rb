@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2008  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,13 +30,14 @@ class TrackerTest < ActiveSupport::TestCase
 
   def test_copy_workflows
     source = Tracker.find(1)
-    assert_equal 89, source.workflow_rules.size
+    rules_count = source.workflow_rules.count
+    assert rules_count > 0
 
     target = Tracker.new(:name => 'Target', :default_status_id => 1)
     assert target.save
     target.workflow_rules.copy(source)
     target.reload
-    assert_equal 89, target.workflow_rules.size
+    assert_equal rules_count, target.workflow_rules.size
   end
 
   def test_issue_statuses

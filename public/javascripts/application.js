@@ -1,5 +1,5 @@
 /* Redmine - project management software
-   Copyright (C) 2006-2015  Jean-Philippe Lang */
+   Copyright (C) 2006-2016  Jean-Philippe Lang */
 
 function checkAll(id, checked) {
   $('#'+id).find('input[type=checkbox]:enabled').prop('checked', checked);
@@ -275,6 +275,8 @@ function toggleOperator(field) {
     case "y":
     case "o":
     case "c":
+    case "*o":
+    case "!o":
       enableValues(field, []);
       break;
     case "><":
@@ -352,11 +354,12 @@ function moveTabLeft(el) {
 
 function displayTabsButtons() {
   var lis;
-  var tabsWidth = 0;
+  var tabsWidth;
   var el;
   $('div.tabs').each(function() {
     el = $(this);
     lis = el.find('ul').children();
+    tabsWidth = 0;
     lis.each(function(){
       if ($(this).is(':visible')) {
         tabsWidth += $(this).width() + 6;
@@ -472,10 +475,13 @@ function randomKey(size) {
   return key;
 }
 
-function updateIssueFrom(url) {
+function updateIssueFrom(url, el) {
   $('#all_attributes input, #all_attributes textarea, #all_attributes select').each(function(){
     $(this).data('valuebeforeupdate', $(this).val());
   });
+  if (el) {
+    $("#form_update_triggered_by").val($(el).attr('id'));
+  }
   return $.ajax({
     url: url,
     type: 'post',
@@ -555,7 +561,13 @@ function beforeShowDatePicker(input, inst) {
       break;
     case "issue_due_date" :
       if ($("#issue_start_date").size() > 0) {
-        default_date = $("#issue_start_date").val();
+        var start_date = $("#issue_start_date").val();
+        if (start_date != "") {
+          start_date = new Date(Date.parse(start_date));
+          if (start_date > new Date()) {
+            default_date = $("#issue_start_date").val();
+          }
+        }
       }
       break;
   }
@@ -650,8 +662,18 @@ $(document).ready(function(){
   toggleDisabledInit();
 });
 
+function keepAnchorOnSignIn(form){
+  var hash = decodeURIComponent(self.document.location.hash);
+  if (hash) {
+    if (hash.indexOf("#") === -1) {
+      hash = "#" + hash;
+    }
+    form.action = form.action + hash;
+  }
+  return true;
+}
+
 $(document).ready(setupAjaxIndicator);
 $(document).ready(hideOnLoad);
 $(document).ready(addFormObserversForDoubleSubmit);
 $(document).ready(defaultFocus);
-

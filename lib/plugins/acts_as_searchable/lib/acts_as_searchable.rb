@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -159,15 +159,7 @@ module Redmine
           private :search_tokens_condition
 
           def search_token_match_statement(column, value='?')
-            if Redmine::Database.postgresql?
-              if Redmine::Database.postgresql_unaccent?
-                "unaccent(#{column}) ILIKE unaccent(#{value})"
-              else
-                "#{column} ILIKE #{value}"
-              end
-            else
-              "#{column} LIKE #{value}"
-            end
+            Redmine::Database.like(column, value)
           end
           private :search_token_match_statement
 

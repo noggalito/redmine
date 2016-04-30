@@ -1,5 +1,5 @@
 # Redmine - project management software
-# Copyright (C) 2006-2015  Jean-Philippe Lang
+# Copyright (C) 2006-2016  Jean-Philippe Lang
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -68,9 +68,9 @@ class IssuesCustomFieldsVisibilityTest < ActionController::TestCase
       get :show, :id => @issue.id
       @fields.each_with_index do |field, i|
         if fields.include?(field)
-          assert_select 'td', {:text => "Value#{i}", :count => 1}, "User #{user.id} was not able to view #{field.name}"
+          assert_select '.value', {:text => "Value#{i}", :count => 1}, "User #{user.id} was not able to view #{field.name}"
         else
-          assert_select 'td', {:text => "Value#{i}", :count => 0}, "User #{user.id} was able to view #{field.name}"
+          assert_select '.value', {:text => "Value#{i}", :count => 0}, "User #{user.id} was able to view #{field.name}"
         end
       end
     end

@@ -343,6 +343,7 @@ es-PA:
   general_csv_encoding: ISO-8859-15
   general_csv_separator: ','
   general_pdf_fontname: freesans
+  general_pdf_monospaced_fontname: freemono
   general_first_day_of_week: '1'
   general_lang_name: 'Spanish/Panama (Español/Panamá)'
   general_text_No: 'No'
@@ -392,10 +393,6 @@ es-PA:
   label_chronological_order: En orden cronológico
   label_closed_issues: cerrada
   label_closed_issues_plural: cerradas
-  label_x_open_issues_abbr_on_total:
-    zero:  0 abiertas / %{total}
-    one:   1 abierta / %{total}
-    other: "%{count} abiertas / %{total}"
   label_x_open_issues_abbr:
     zero:  0 abiertas
     one:   1 abierta
@@ -444,8 +441,6 @@ es-PA:
   label_downloads_abbr: D/L
   label_duplicated_by: duplicada por
   label_duplicates: duplicada de
-  label_end_to_end: fin a fin
-  label_end_to_start: fin a principio
   label_enumeration_new: Nuevo valor
   label_enumerations: Listas de valores
   label_environment: Entorno
@@ -615,8 +610,6 @@ es-PA:
   label_sort_lower: Bajar
   label_sort_lowest: Último
   label_spent_time: Tiempo dedicado
-  label_start_to_end: principio a fin
-  label_start_to_start: principio a principio
   label_statistics: Estadísticas
   label_stay_logged_in: Mantener la sesión abierta
   label_string: Texto
@@ -1189,4 +1182,37 @@ es-PA:
   label_member_management_selected_roles_only: Sólo estos roles
   label_password_required: Confirme su contraseña para continuar
   label_total_spent_time: Tiempo total dedicado
+  notice_import_finished: Todos %{count} los elementos han sido importados.
+  notice_import_finished_with_errors: ! '%{count} de %{total} elementos no pudieron ser
+    importados.'
+  error_invalid_file_encoding: El archivo no utiliza %{encoding} válida
+  error_invalid_csv_file_or_settings: El archivo no es un archivo CSV o no coincide con la
+    configuración
+  error_can_not_read_import_file: Ocurrió un error mientras se leía el archivo a importar
+  permission_import_issues: Importar incidencias
+  label_import_issues: Importar incidencias
+  label_select_file_to_import: Selecciona el archivo a importar
+  label_fields_separator: Separador de Campos
+  label_fields_wrapper: Envoltorio de Campo
+  label_encoding: Codificación
+  label_comma_char: Coma
+  label_semi_colon_char: Punto y Coma
+  label_quote_char: Comilla Simple
+  label_double_quote_char: Comilla Doble
+  label_fields_mapping: Mapeo de Campos
+  label_file_content_preview: Vista Previa del contenido
+  label_create_missing_values: Crear valores no presentes
+  button_import: Importar
   field_total_estimated_hours: Total de Tiempo Estimado
+  label_api: API
+  label_total_plural: Totales
+  label_assigned_issues: Incidencias Asignadas
+  label_field_format_enumeration: Lista Llave/valor
+  label_f_hour_short: '%{value} h'
+  field_default_version: Version Predeterminada
+  error_attachment_extension_not_allowed: Extensión adjuntada %{extension} no es permitida
+  setting_attachment_extensions_allowed: Extensiones Permitidas
+  setting_attachment_extensions_denied: Extensiones Prohibidas
+  label_any_open_issues: cualquier incidencias abierta
+  label_no_open_issues: incidencias cerradas
+  label_default_values_for_new_users: Valor predeterminado para nuevos usuarios
