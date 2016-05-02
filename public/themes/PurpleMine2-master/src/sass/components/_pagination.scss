@@ -1,0 +1,42 @@
+//
+// Pagination (multiple pages)
+// --------------------------------------------------
+.pagination {
+    .previous,
+    .next,
+    .page {
+        display: inline-block;
+        padding: $pagination-padding-vertical $pagination-padding-horizontal;
+        border: 1px solid $pagination-border;
+        border-radius: $border-radius-base;
+        background-color: $pagination-bg;
+        color: $pagination-color;
+        text-decoration: none;
+
+        &:hover,
+        &:focus {
+            border-color: $pagination-hover-border;
+            background-color: $pagination-hover-bg;
+            color: $pagination-hover-color;
+        }
+    }
+
+    .page.current {
+        border-color: $pagination-active-border;
+        background-color: $pagination-active-bg;
+        color: $pagination-active-color;
+        cursor: default;
+        z-index: 2;
+    }
+
+    .items,
+    .per-page {
+        display: inline-block;
+        margin: ($pagination-padding-vertical + 1px) 0 ($pagination-padding-vertical + 1px) $pagination-padding-vertical;
+    }
+}
+
+p.pagination {
+    margin-bottom: 0;
+    float: left;
+}

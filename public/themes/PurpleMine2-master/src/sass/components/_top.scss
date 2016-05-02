@@ -1,0 +1,356 @@
+//
+// Top menu
+// --------------------------------------------------
+
+#top-menu {
+    position: relative;
+    padding: $padding-small-vertical $padding-side;
+    background: $top-menu-bg;
+    color: $top-menu-text;
+    font-size: $font-size-small;
+    @extend %clearfix;
+
+    @if $top-menu-collapse {
+        $toggler-position-v:    $padding-small-vertical + 1px;
+        $toggler-position-h:    1px;
+
+        max-height: floor($font-size-base * $font-size-small-unitless * $line-height-base) + $padding-small-vertical;
+        padding-bottom: 0;
+        overflow: hidden;
+
+        &.expanded {
+            max-height: none;
+        }
+
+        a {
+            display: inline-block;
+            margin-bottom: $padding-small-vertical;
+            white-space: nowrap;
+        }
+
+        .top-menu-toggler {
+            display: block;
+            position: absolute;
+            top: $toggler-position-v;
+            @if $sidebar-position == "left" {
+                left: $toggler-position-h;
+            } @else {
+                right: $toggler-position-h;
+            }
+            @include user-select(none);
+
+            @if $use-font-awesome {
+                font-size: 14px;
+
+                &:before {
+                    content: $fa-var-caret-square-o-down;
+                }
+            } @else {
+                @extend %image-arrow-down-white;
+            }
+
+            @if $use-font-awesome {
+                @extend %fa-icon;
+                color: mix($top-menu-link, $top-menu-bg, 33%);
+                line-height: 1;
+
+                &:before {
+                    margin-right: 0;
+                }
+
+                &:hover,
+                &:focus,
+                &:active {
+                    color: mix($top-menu-link-hover, $top-menu-bg, 50%);
+                }
+            } @else {
+                width: 15px;
+                height: 15px;
+                border-radius: $border-radius-base;
+                background-repeat: no-repeat;
+                background-position: center center;
+
+                &:hover,
+                &:focus,
+                &:active {
+                    background-color: lighten($top-menu-bg, 15%);
+                }
+            }
+
+            &.expanded {
+                @if $use-font-awesome {
+                    &:before {
+                        content: $fa-var-caret-square-o-up;
+                    }
+                } @else {
+                    @extend %image-arrow-up-white;
+                }
+            }
+
+            @media screen and (min-width: $top-menu-collapse-breakpoint) {
+                display: none;
+            }
+        }
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+    }
+
+    li {
+        display: inline;
+        margin: 0 .5em 0 0;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    a {
+        color: $top-menu-link;
+        font-weight: $font-weight-bold;
+
+        &:hover {
+            color: $top-menu-link-hover;
+            text-decoration: none;
+        }
+    }
+
+    #loggedas {
+        margin-left: 1em;
+        float: right;
+    }
+}
+
+#account {
+    float: right;
+
+    > ul > li {
+        margin-right: 0;
+        margin-left: .5em;
+    }
+}
+
+
+//
+// Header
+// --------------------------------------------------
+
+#header {
+    position: relative;
+    background-color: $header-bg;
+    color: $header-text;
+    @extend %clearfix;
+
+    > h1 {
+        padding: $header-padding-vertical $header-padding-horizontal;
+
+        @if $use-logo {
+            padding-left: $logo-image-width + $logo-position-horizontal + $logo-space;
+            background-image: url("../images/logo/logo.png");
+            background-repeat: no-repeat;
+            background-position: $logo-position-horizontal $logo-position-vertical;
+
+            @if $use-retina-logo {
+                @include img-retina("../images/logo/logo@2x.png", $logo-image-width, $logo-image-height);
+            }
+        }
+
+        > .root {
+            color: $header-root;
+            font-weight: 500;
+        }
+
+        > .ancestor {
+            font-weight: 500;
+        }
+    }
+
+    a {
+        color: $header-link;
+    }
+}
+
+#quick-search {
+    margin-top: floor(($header-title-line-height + $header-padding-vertical * 2 - $input-height-base) / 2) - 1px;
+    margin-right: $header-padding-horizontal;
+    float: right;
+    color: $header-text;
+
+    label {
+        font-weight: 500;
+    }
+
+    form {
+        display: inline;
+    }
+
+    input,
+    select {
+        margin-left: 5px;
+        border-color: darken($header-bg, 15%);
+        background: darken($header-bg, 10%);
+        color: $header-root;
+        @include transition(color ease-in-out .1s, background-color ease-in-out .1s, border-color ease-in-out .1s);
+
+        &:focus {
+            border-color: darken($header-bg, 35%);
+            background-color: $input-bg;
+            color: $input-color;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, .3);
+        }
+    }
+
+    option {
+        background-color: $input-bg;
+        color: $input-color;
+
+        &[disabled] {
+            color: $gray-lighter;
+        }
+    }
+
+    input {
+        width: 200px;
+    }
+}
+
+#main-menu {
+    clear: both;
+    background-color: $main-menu-bg;
+    box-shadow: inset 0 -1px $main-menu-border;
+
+    @if $main-menu-collapse {
+        $toggler-position-v:    $main-menu-padding-vertical + 3px;
+        $toggler-position-h:    1px;
+
+        position: relative;
+        max-height: $line-height-computed + $main-menu-padding-vertical * 2;
+        overflow: hidden;
+
+        &.expanded {
+            max-height: none;
+        }
+
+        .main-menu-toggler {
+            display: block;
+            position: absolute;
+            top: $toggler-position-v;
+            @if $sidebar-position == "left" {
+                left: $toggler-position-h;
+            } @else {
+                right: $toggler-position-h;
+            }
+            @include user-select(none);
+
+            @if $use-font-awesome {
+                font-size: 14px;
+
+                &:before {
+                    content: $fa-var-caret-square-o-down;
+                }
+            } @else {
+                @extend %image-arrow-down;
+            }
+
+            @if $use-font-awesome {
+                @extend %fa-icon;
+                color: mix($main-menu-link, $main-menu-bg, 33%);
+                line-height: 1;
+
+                &:before {
+                    margin-right: 0;
+                }
+
+                &:hover,
+                &:focus,
+                &:active {
+                    color: mix($main-menu-link, $main-menu-bg, 50%);
+                }
+            } @else {
+                width: 15px;
+                height: 15px;
+                border-radius: $border-radius-base;
+                background-repeat: no-repeat;
+                background-position: center center;
+
+                &:hover,
+                &:focus,
+                &:active {
+                    background-color: darken($main-menu-bg, 15%);
+                }
+            }
+
+            &.expanded {
+                @if $use-font-awesome {
+                    &:before {
+                        content: $fa-var-caret-square-o-up;
+                    }
+                } @else {
+                    @extend %image-arrow-up;
+                }
+            }
+
+            @media screen and (min-width: $main-menu-collapse-breakpoint) {
+                display: none;
+            }
+        }
+    } @else {
+        @media screen and (max-width: $screen-sm-max) {
+            font-size: $font-size-small-px;
+        }
+    }
+
+    ul {
+        margin: 0;
+        padding: 0 ($padding-side - $main-menu-padding-horizontal);
+        color: $main-menu-link;
+        list-style: none;
+        @extend %clearfix;
+
+        > li {
+            margin-right: .5em;
+            float: left;
+
+            > a {
+                display: block;
+                white-space: nowrap;
+                @include transition(box-shadow .2s);
+
+                @if $main-menu-collapse {
+                    padding: $main-menu-padding-vertical $main-menu-padding-horizontal;
+                } @else {
+                    padding: $main-menu-padding-vertical 0;
+
+                    @media screen and (min-width: $screen-md-min) {
+                        padding-right: $main-menu-padding-horizontal;
+                        padding-left: $main-menu-padding-horizontal;
+                    }
+                }
+
+                @media screen and (min-width: $screen-lg-min) {
+                    padding-right: $main-menu-padding-horizontal * 2;
+                    padding-left: $main-menu-padding-horizontal * 2;
+                }
+
+                &:hover,
+                &:focus {
+                    outline: 0 none;
+                    text-decoration: none;
+                    box-shadow: inset 0 (-$main-menu-shadow-width) 0 $main-menu-shadow-hover;
+                }
+
+                &.selected {
+                    padding-bottom: $main-menu-padding-vertical - $main-menu-shadow-width;
+                    border-bottom: 3px solid $main-menu-shadow-active;
+                    color: $main-menu-link-active;
+                    font-weight: $font-weight-bold;
+                    box-shadow: none;
+                }
+            }
+        }
+    }
+
+    a {
+        color: $main-menu-link;
+    }
+}

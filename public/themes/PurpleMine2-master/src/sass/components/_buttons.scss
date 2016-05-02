@@ -1,0 +1,137 @@
+//
+// Buttons
+// --------------------------------------------------
+
+input[type="button"],
+input[type="submit"],
+button {
+    display: inline-block;
+    margin-bottom: 0;
+    border: 1px solid;
+    font-weight: $btn-font-weight;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    @include button-size($btn-padding-vertical, $btn-padding-horizontal, $font-size-base, $line-height-base, $border-radius-base);
+    @include user-select(none);
+    @include transition(background-color ease-in-out .07s, border-color ease-in-out .07s, box-shadow ease-in-out .07s);
+    @include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:active {
+        outline: 0;
+    }
+
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+        pointer-events: none; // Future-proof disabling of clicks
+        box-shadow: none;
+        @include opacity(.65);
+    }
+}
+
+
+/**
+ * Form buttons layout
+ */
+
+form {
+    input[type="submit"] {
+        margin-right: 5px;
+
+        + input {
+            @include button-variant($btn-success-color, $btn-success-bg, $btn-success-border);
+        }
+
+        + a {
+            margin-right: 5px;
+        }
+
+        + a + a {
+            margin-left: 5px;
+        }
+    }
+}
+
+
+/**
+ * Repository's 'View differences' button
+ */
+form[action*="repository/diff"] {
+    margin-bottom: $line-height-computed / 2;
+}
+
+
+/**
+ * Forum and news message form buttons layout
+ */
+
+#message-form,
+#news-form {
+    #message_sticky,
+    #message_locked {
+        position: relative;
+        top: 1px;
+        margin-left: 5px;
+    }
+}
+
+
+/**
+ * Query builder buttons
+ */
+
+.query-columns {
+    select {
+        // scss-lint:disable ImportantRule
+        width: auto !important;
+    }
+
+    .buttons {
+        vertical-align: middle;
+
+        input[type="button"] {
+            width: 32px;
+            margin-bottom: 4px;
+            padding-right: 1px;
+            padding-left: 1px;
+            @include button-variant($btn-default-color, $btn-default-bg, $btn-default-border);
+        }
+    }
+}
+
+
+/**
+ * Button for toggling multiselect (in filters)
+ */
+
+a[data-expands],
+.toggle-multiselect {
+    position: relative;
+    top: 3px;
+    padding: 2px 8px;
+    border: 1px solid;
+    border-radius: $border-radius-base;
+    @extend %image-toggle-plus;
+    background-repeat: no-repeat;
+    background-position: 2px 2px;
+    cursor: pointer;
+    vertical-align: top;
+    @include user-select(none);
+    @include button-variant($btn-default-color, $btn-default-bg, $btn-default-border);
+}
+
+a[data-expands] {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 10px;
+
+    img {
+        display: none;
+    }
+}
