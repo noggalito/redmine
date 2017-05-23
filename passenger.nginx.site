@@ -6,7 +6,6 @@ server {
               www.nodriza.noggalito.com;
   passenger_enabled on;
   passenger_app_env production;
-  passenger_user wuxi;
   root /home/macool/redmine-3.1/public;
   client_max_body_size 4g;
 }
