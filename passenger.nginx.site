@@ -7,6 +7,7 @@ server {
   passenger_enabled on;
   passenger_app_env production;
   passenger_ruby /home/macool/.rbenv/versions/2.3.0/bin/ruby;
+  passenger_log_file /home/macool/redmine-3.1/log/passenger.log;
   root /home/macool/redmine-3.1/public;
   client_max_body_size 4g;
 }

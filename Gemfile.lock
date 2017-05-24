@@ -105,6 +105,10 @@ GEM
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9.7)
       ruby_dep (~> 1.1)
+    lograge (0.4.1)
+      actionpack (>= 4, < 5.1)
+      activesupport (>= 4, < 5.1)
+      railties (>= 4, < 5.1)
     loofah (2.0.3)
       nokogiri (>= 1.5.9)
     lumberjack (1.0.10)
@@ -280,6 +284,7 @@ DEPENDENCIES
   inifile
   jquery-rails (~> 3.1.4)
   liquid (~> 2.4.1)
+  lograge
   mime-types
   minitest
   mocha
@@ -315,4 +320,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   1.11.2
+   1.14.6
